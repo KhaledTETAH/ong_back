@@ -43,7 +43,7 @@ Variables attendues (voir `.env.example`) :
 | ------------- | ------------------------------ | ------------ |
 | `DB_NAME`     | Nom de la base PostgreSQL      | `ong_back`   |
 | `DB_USER`     | Utilisateur PostgreSQL         | `postgres`   |
-| `DB_PASSWORD` | Mot de passe                   | *(vide)*     |
+| `DB_PASSWORD` | Mot de passe                   | *your_psw*   |
 | `DB_HOST`     | Hôte de la base                | `localhost`  |
 | `DB_PORT`     | Port                           | `5432`       |
 
@@ -91,3 +91,9 @@ L'application est disponible sur http://127.0.0.1:8000/.
 - Ne jamais commiter de secrets (`.env`, clés, mots de passe).
 - Ajouter toute nouvelle variable de configuration dans `.env.example`.
 - Versionner `uv.lock` (versions figées) ; ne pas versionner `.venv/`.
+
+Chaque branche suit le format **`prenom/nom-feature`** :
+
+- `prenom` : votre prénom en minuscules, sans accent
+- `nom-feature` : description courte de la fonctionnalité, en minuscules,
+  mots séparés par des tirets (`-`)
