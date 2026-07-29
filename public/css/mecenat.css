@@ -1,0 +1,67 @@
+/* =====================================================================
+   mecenat.html — styles propres à la page mécénat
+   (design system commun : style.css)
+   ===================================================================== */
+
+.app-section { padding: var(--space-6) 0; }
+.section-tinted { background: var(--color-surface); border-block: 1px solid var(--color-border); }
+.section-head.text-center p.mx-auto { max-width: 60ch; }
+
+/* Bandeau d'intro (accent chaleureux, ambre) */
+.mecenat-hero {
+  background: linear-gradient(180deg, var(--color-accent-soft) 0%, var(--color-bg) 100%);
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.mecenat-eyebrow { color: var(--color-accent-dark); }
+.mecenat-hero h1 { font-size: clamp(1.8rem, 3.4vw, 2.5rem); line-height: 1.15; margin-bottom: var(--space-3); }
+.mecenat-lead { color: var(--color-text-muted); font-size: 1.05rem; max-width: 54ch; margin-bottom: var(--space-4); }
+
+/* Bloc de repères */
+.mecenat-figures { padding: var(--space-3); display: grid; gap: var(--space-2); }
+.mecenat-figure {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-1);
+}
+.mecenat-figure + .mecenat-figure { border-top: 1px solid var(--color-border); }
+.mecenat-figure i {
+  font-size: 1.5rem;
+  color: var(--color-primary);
+  width: 40px; text-align: center;
+}
+.fig-value { display: block; font-weight: 700; }
+.fig-label { display: block; font-size: .85rem; color: var(--color-text-muted); }
+
+/* Étapes « comment ça marche » (numérotation = vraie séquence) */
+.steps {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  counter-reset: step;
+}
+.step {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+.step-num {
+  display: inline-grid;
+  place-items: center;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+}
+.step h3 { font-size: 1.05rem; margin-bottom: var(--space-1); }
+.step p { margin-bottom: 0; }
+
+@media (max-width: 767.98px) {
+  .steps { grid-template-columns: 1fr; }
+}

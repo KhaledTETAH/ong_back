@@ -1,0 +1,108 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: engagement-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./:/var/www/html
+      - vendor_data:/var/www/html/vendor
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - engagement
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: engagement-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - ./:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - engagement
+
+  mysql:
+    image: mysql:8.4
+    container_name: engagement-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: engagement
+      MYSQL_USER: engagement
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: root-secret
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot-secret"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - engagement
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: engagement-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - engagement
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: engagement-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - engagement
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: engagement-queue
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
+    env_file:
+      - .env
+    volumes:
+      - ./:/var/www/html
+      - vendor_data:/var/www/html/vendor
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - engagement
+
+volumes:
+  mysql_data:
+  redis_data:
+  vendor_data:
+
+networks:
+  engagement:
+    driver: bridge
