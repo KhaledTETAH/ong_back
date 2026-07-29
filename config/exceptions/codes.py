@@ -2,4 +2,4 @@ from enum import Enum
 
 class ErrorCode(str, Enum):
 	# for business logic error codes
-	pass
+	INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR"
