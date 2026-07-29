@@ -1,193 +1,101 @@
-# Engagement Platform — Laravel backend for the first six pages
+# ONG Back
 
-This repository turns the first six static pages of the supplied `ong-theme` prototype into a database-backed Laravel application and a versioned REST API.
+Backend Django du projet ONG.
 
-## Implemented scope
+Cette branche couvre les pages 1 a 6 du cahier des charges avec Django REST
+Framework, SimpleJWT et PostgreSQL.
 
-| Prototype page | Dynamic backend coverage |
-|---|---|
-| 1. Login | Session login, Sanctum token login, logout, browser/API password reset, email verification, candidate and organization registration APIs, Google and LinkedIn OpenID integration points |
-| 2. Public portal | Live statistics, featured offers, covered countries, sponsor placement |
-| 3. Missions | Keyword search, filters, sorting, geolocation-ready proximity search, pagination |
-| 4. NGO directory | Search, country/cause/verification/type/size filters, sorting, organization detail |
-| 5. Skills sponsorship | Secure mission submission, email verification, tracking token, anti-spam honeypot, queued notification |
-| 6. Offer detail | Full offer data, organization card, similar offers, views, functional browser apply/save actions, and apply/save/share API endpoints |
+## Pages couvertes
 
-The original visual style is preserved in dynamic Blade templates under `resources/views`, while the source CSS is under `public/css`.
+| Page | Endpoints principaux |
+| --- | --- |
+| Login | `/api/v1/auth/login/`, `/api/v1/auth/refresh/`, `/api/v1/auth/logout/`, `/api/v1/auth/me/`, `/api/v1/auth/register/candidate/`, `/api/v1/auth/register/organization/` |
+| Portail public | `/api/v1/home/` |
+| Missions | `/api/v1/offers/` |
+| Annuaire ONG | `/api/v1/organizations/`, `/api/v1/organizations/<slug>/` |
+| Mecenat de competences | `/api/v1/sponsorship-missions/`, tracking et verification par token |
+| Detail offre | `/api/v1/offers/<slug>/`, `/api/v1/offers/<slug>/similar/`, apply/save/share |
 
-## Stack
+## Prerequis
 
-- Laravel 13
-- PHP 8.3+
-- MySQL 8.4
-- Redis 7.4
-- Laravel Sanctum
-- Laravel Socialite
-- Blade + Bootstrap 5
-- Pest 4
-- Docker Compose, Nginx, Mailpit
+- Python 3.13+
+- uv
+- PostgreSQL 14+
 
-## Quick start with Docker
+## Installation
 
 ```bash
+git clone <url-du-depot>
+cd ong_back
+uv sync
+```
+
+Copier le fichier d'environnement :
+
+```bash
+# Windows
+copy .env.example .env
+
+# Linux / macOS
 cp .env.example .env
-docker compose build
-docker compose run --rm app php artisan key:generate
-docker compose up -d
-docker compose exec app php artisan migrate --seed
-docker compose exec app php artisan storage:link
 ```
 
-Open:
+Variables principales :
 
-- Website: `http://localhost:8000`
-- Mailpit: `http://localhost:8025`
+| Variable | Description |
+| --- | --- |
+| `DJANGO_SECRET_KEY` | Cle secrete Django |
+| `DEBUG` | Active/desactive le mode debug |
+| `ALLOWED_HOSTS` | Hotes autorises |
+| `CORS_ALLOWED_ORIGINS` | URLs frontend autorisees |
+| `DATABASE_URL` | URL PostgreSQL complete |
+| `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT` | Parametres PostgreSQL separes |
 
-Demo accounts:
+## Base de donnees
 
-```text
-Candidate:
-candidat@example.test
-Password123!
+Avec PostgreSQL local :
 
-Organization administrator:
-organisation@example.test
-Password123!
+```sql
+CREATE DATABASE ong_back;
 ```
 
-## Local start without Docker
-
-Requirements: PHP 8.3+, Composer 2, MySQL or SQLite.
+Puis :
 
 ```bash
-composer install
-cp .env.example .env
-php artisan key:generate
-touch database/database.sqlite
+uv run python manage.py migrate
+uv run python manage.py seed_demo
 ```
 
-For SQLite, change `.env`:
-
-```dotenv
-DB_CONNECTION=sqlite
-DB_DATABASE=/absolute/path/to/database/database.sqlite
-CACHE_STORE=database
-QUEUE_CONNECTION=database
-SESSION_DRIVER=database
-```
-
-Then:
+## Lancer le serveur
 
 ```bash
-php artisan migrate --seed
-php artisan storage:link
-php artisan serve
-php artisan queue:work
+uv run python manage.py runserver
 ```
 
-## API
-
-Base URL:
+API locale :
 
 ```text
-/api/v1
+http://127.0.0.1:8000/api/v1/
 ```
-
-Authentication:
-
-```http
-Authorization: Bearer <sanctum-token>
-Accept: application/json
-```
-
-Documentation files:
-
-- `HANDOFF.md`
-- `docs/PAGE_BACKEND_MAPPING.md`
-- `docs/API_REFERENCE.md`
-- `docs/openapi.yaml`
-- `docs/postman_collection.json`
-- `docs/database/ERD.md`
-- `docs/database/DATABASE.md`
-- `docs/database/schema.sql`
-- `docs/SECURITY.md`
-- `docs/DEPLOYMENT.md`
-
-## Main API groups
-
-```text
-POST   /api/v1/auth/login
-POST   /api/v1/auth/register/candidate
-POST   /api/v1/auth/register/organization
-POST   /api/v1/auth/forgot-password
-POST   /api/v1/auth/reset-password
-GET    /api/v1/auth/me
-POST   /api/v1/auth/logout
-
-GET    /api/v1/home
-GET    /api/v1/offers
-GET    /api/v1/offers/{slug}
-GET    /api/v1/offers/{slug}/similar
-POST   /api/v1/offers/{slug}/share
-POST   /api/v1/offers/{slug}/applications
-PUT    /api/v1/offers/{slug}/saved
-DELETE /api/v1/offers/{slug}/saved
-
-GET    /api/v1/organizations
-GET    /api/v1/organizations/{slug}
-
-POST   /api/v1/sponsorship-missions
-GET    /api/v1/sponsorship-missions/{trackingUuid}
-POST   /api/v1/sponsorship-missions/{trackingUuid}/verify
-```
-
-## Database strategy
-
-The schema is normalized around:
-
-- identities and authentication;
-- organizations and verification;
-- taxonomies such as causes, languages and skills;
-- offers and searchable relations;
-- applications and saved offers;
-- skills-sponsorship submissions and email verification;
-- sponsor placements and event analytics.
-
-Laravel migrations are the canonical source of truth. The SQL file is included as a readable MySQL reference, not as a replacement for migrations.
 
 ## Tests
 
 ```bash
-php artisan test
+uv run python manage.py check
+uv run python manage.py test apps.accounts apps.engagement
 ```
 
-The feature suite covers:
+## Docker PostgreSQL
 
-- authentication;
-- candidate registration;
-- offer search and detail;
-- organization directory and detail;
-- sponsorship submission;
-- applying and saving offers;
-- rendering the six public pages;
-- browser-based password reset request;
-- browser-based application and favorite actions.
+Le fichier `docker-compose.yaml` fournit un service PostgreSQL :
 
-## Security notes
+```bash
+docker compose -f docker-compose.yaml up -d postgres
+```
 
-- Passwords are hashed through Laravel's `hashed` cast.
-- API tokens are managed by Sanctum and stored hashed.
-- Login and public-write endpoints are rate-limited.
-- Sponsorship submissions use validation, a honeypot and email confirmation.
-- Sensitive organization documents and candidate CVs use the private storage disk.
-- Public responses never expose contact email, IP address, verification hashes or provider tokens.
-- Production should use HTTPS, secure cookies, managed secrets, backups and malware scanning for uploaded documents.
+## Conventions d'equipe
 
-## Arabic summary
-
-هذا المشروع يحوّل أول ست صفحات من التصميم الثابت إلى تطبيق Laravel فعلي مرتبط بقاعدة بيانات، مع REST API موثّق. يشمل تسجيل الدخول، الصفحة العامة، البحث عن المهمات، دليل الجمعيات، إرسال مهمات التبرع بالمهارات، وتفاصيل العرض، بالإضافة إلى التقديم والحفظ والتتبع.
-
-
-## Validation note
-
-Run `composer install`, `php artisan test`, and `docker compose build` before release or deployment. See `HANDOFF.md` for the full setup and verification checklist.
+- Ne jamais commiter `.env`, mots de passe ou secrets.
+- Ajouter toute nouvelle variable dans `.env.example`.
+- Versionner `uv.lock`.
+- Ne pas versionner `.venv/`.
