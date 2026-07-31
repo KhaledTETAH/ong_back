@@ -7,6 +7,13 @@ class AuthProvider(models.TextChoices):
 	LINKEDIN = 'linkedin', 'LinkedIn'
 	APPLE = 'apple', 'Apple'
 
+class DocumentType(models.TextChoices):
+	BYLAWS = "bylaws", "Bylaws"
+	RECEIPT = "receipt", "Receipt" 
+	OFFICIAL_DECLARATION = "official_declaration", "Official declaration (RNA/RNE)"
+	ACTIVITY_REPORT = "activity_report", "Activity report"
+	ACCREDITATION = "accreditation", "Accreditation"
+
 class Role(models.TextChoices):
 	CANDIDATE = 'candidate', 'Candidate'
 	NGO_MEMBER = 'ngo_member', 'NGO Member'
