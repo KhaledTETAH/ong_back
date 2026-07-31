@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from .models import Organization
 from .serializers import OrganizationSerializer
 from config.responses import SuccessResponse
+from rest_framework.permissions import AllowAny
 
 
 class OrganizationListView(APIView):
@@ -10,6 +11,8 @@ class OrganizationListView(APIView):
 	GET /api/organizations/
 	Returns a list of all active organizations.
 	"""
+	permission_classes = [AllowAny]
+
 	def get(self, request):
 		organizations = Organization.objects.filter(
 			is_active=True
@@ -17,7 +20,7 @@ class OrganizationListView(APIView):
 		
 		serializer = OrganizationSerializer(organizations, many=True)
 		
-		return SuccessResponse.success(
+		return SuccessResponse(
 			data=serializer.data,
 			message="Organizations retrieved successfully"
 		)
@@ -28,6 +31,7 @@ class OrganizationDetailView(APIView):
 	GET /api/organizations/<uuid:id>/
 	Returns details of a single active organization.
 	"""
+	permission_classes = [AllowAny]
 	def get(self, request, id):
 		organization = get_object_or_404(
 			Organization.objects.filter(is_active=True).prefetch_related("offers", "causes"),
@@ -36,7 +40,7 @@ class OrganizationDetailView(APIView):
 		
 		serializer = OrganizationSerializer(organization)
 		
-		return SuccessResponse.success(
+		return SuccessResponse(
 			data=serializer.data,
 			message="Organization retrieved successfully"
 		)

@@ -34,6 +34,18 @@ class Organization(models.Model):
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 
+	def save(self, *args, **kwargs):
+		# auto-generate slug from name if not provided
+		if not self.slug:
+			base = slugify(self.name) or "organization"
+			slug = base
+			counter = 1
+			while Organization.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+				counter += 1
+				slug = f"{base}-{counter}"
+			self.slug = slug
+		super().save(*args, **kwargs)
+
 	def __str__(self):
 		return self.name
 
