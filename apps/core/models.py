@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.utils.text import slugify
 
 class Cause(models.Model):
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -17,6 +18,11 @@ class Cause(models.Model):
 
 	def __str__(self):
 		return self.name
+
+	def save(self, *args, **kwargs):
+		if not self.slug:
+			self.slug = slugify(self.name)
+		super().save(*args, **kwargs)
 
 class Country(models.Model):
 	id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -65,3 +71,8 @@ class Skill(models.Model):
 
 	def __str__(self):
 		return self.name
+
+	def save(self, *args, **kwargs):
+		if not self.slug:
+			self.slug = slugify(self.name)
+		super().save(*args, **kwargs)
