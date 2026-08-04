@@ -42,5 +42,5 @@ jobs:
       - name: Run Django System Check
         run: uv run python manage.py check
         env:
-          SECRET_KEY: "ci-dummy-secret-key-for-testing-only"
+          DJANGO_SECRET_KEY: "ci-dummy-secret-key-for-testing-only"
           DEBUG: "False"
