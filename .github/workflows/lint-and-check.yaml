@@ -43,4 +43,5 @@ jobs:
         run: uv run python manage.py check
         env:
           DJANGO_SECRET_KEY: "ci-dummy-secret-key-for-testing-only"
+          DATABASE_URL: "postgresql://postgres:secretpassword@localhost:5432/ong_back"
           DEBUG: "False"
