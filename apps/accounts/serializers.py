@@ -5,8 +5,8 @@ class LogoutSerializer(serializers.Serializer):
   refresh = serializers.CharField(help_text="The refresh token to blacklist")
 
   def validate_refresh(self, value):
-    from rest_framework_simplejwt.tokens import RefreshToken
     from rest_framework_simplejwt.exceptions import TokenError
+    from rest_framework_simplejwt.tokens import RefreshToken
 
     try:
       RefreshToken(self.refresh)

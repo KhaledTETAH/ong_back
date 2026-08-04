@@ -1,11 +1,12 @@
 from django.urls import path
+
 from .views import (
-  MeView,
-  PublicPage7View,
-  ProtectedPage89View,
-  LogoutView,
   CustomTokenObtainPairView,
   CustomTokenRefreshView,
+  LogoutView,
+  MeView,
+  ProtectedPage89View,
+  PublicPage7View,
 )
 
 urlpatterns = [

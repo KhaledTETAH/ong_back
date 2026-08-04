@@ -1,8 +1,10 @@
-from rest_framework import generics, permissions
+from rest_framework import generics
 from rest_framework.views import APIView
-from .models import CandidateProfile, DesiredPosition
-from .serializers import DesiredPositionSerializer, ActivelyLookingSerializer
+
 from config.responses import SuccessResponse
+
+from .models import CandidateProfile, DesiredPosition
+from .serializers import ActivelyLookingSerializer, DesiredPositionSerializer
 
 
 class DesiredPositionView(generics.RetrieveUpdateAPIView):

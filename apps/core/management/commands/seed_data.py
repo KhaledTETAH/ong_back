@@ -20,21 +20,29 @@ All creation helpers use get_or_create, so re-running the command without
 
 import random
 from datetime import timedelta
-from django.core.management.base import BaseCommand
-from django.core.management import call_command
-from django.utils import timezone
-from django.contrib.auth import get_user_model
 
+from django.contrib.auth import get_user_model
+from django.core.management import call_command
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+
+from apps.accounts.enums import AuthProvider, Role, Status
+from apps.core.enums import EngagementType, RemoteMode
 from apps.core.models import Cause, Country, Language, Skill
+from apps.organizations.enums import (
+  DocumentType,
+  MemberRole,
+  OfferStatus,
+  OrganizationType,
+  VerificationStatus,
+)
 from apps.organizations.models import (
+  Follow,
+  Offer,
   Organization,
   OrganizationDocument,
   OrganizationMember,
-  Follow,
-  Offer,
 )
-from apps.accounts.enums import *
-from apps.organizations.enums import *
 
 User = get_user_model()
 
@@ -73,9 +81,6 @@ class Command(BaseCommand):
     skills = self.seed_skills()
 
     # 2. Users
-    admin_user = self.create_user(
-      "admin@plateforme.org", "admin123", Role.ADMIN, Status.ACTIVE
-    )
     ngo_owner = self.create_user(
       "directeur@lumiere-oran.org", "password123", Role.NGO_MEMBER, Status.ACTIVE
     )
@@ -84,12 +89,6 @@ class Command(BaseCommand):
     )
     candidate = self.create_user(
       "candidate@email.com", "password123", Role.CANDIDATE, Status.ACTIVE
-    )
-    referent = self.create_user(
-      "referent@entreprise.com",
-      "password123",
-      Role.VOLUNTEERING_REFERENT,
-      Status.ACTIVE,
     )
 
     # 3. Organizations
@@ -113,17 +112,6 @@ class Command(BaseCommand):
       VerificationStatus.CERTIFIED_PLUS,
       "F-9876",
       "2005",
-      causes,
-    )
-    org3 = self.create_organization(
-      "Les Amis de la Terre Afrique",
-      ngo_owner,
-      countries["FRA"],
-      "Paris",
-      OrganizationType.NGO,
-      VerificationStatus.IN_PROGRESS,
-      "RNA-5544",
-      "2018",
       causes,
     )
 
@@ -243,6 +231,8 @@ class Command(BaseCommand):
     a placeholder logo/banner, and a default set of causes (Éducation,
     Solidarité, Jeunesse) attached on first creation.
     """
+    clean_name = name.lower().replace(" ", "").replace("'", "")
+    website = f"https://www.{clean_name}.org"
     org, created = Organization.objects.get_or_create(
       name=name,
       defaults={
@@ -253,9 +243,16 @@ class Command(BaseCommand):
         "verification_status": verification,
         "registry_number": registry,
         "founded_year": int(founded),
-        "description": f"L'organisation {name} œuvre depuis {founded} pour le développement local et l'impact social. Elle accompagne les communautés à travers des programmes structurants et un réseau de bénévoles engagés.",
-        "mission": f"Promouvoir l'accès aux droits fondamentaux et renforcer les capacités locales dans la région de {city}.",
-        "website": f"https://www.{name.lower().replace(' ', '').replace("'", '')}.org",
+        "description": (
+          f"L'organisation {name} œuvre depuis {founded} pour le",
+          "développement local et l'impact social. Elle accompagne les communautés ",
+          "à travers des programmes structurants et un réseau de bénévoles engagés.",
+        ),
+        "mission": (
+          "Promouvoir l'accès aux droits fondamentaux et renforcer les ",
+          "capacités locales dans la région  de {city}.",
+        ),
+        "website": website,
         "is_active": True,
         "logo_url": "https://ui-avatars.com/api/?name="
         + name.replace(" ", "+")
@@ -311,7 +308,10 @@ class Command(BaseCommand):
         "remote": RemoteMode.ON_SITE,
         "duration": "6 mois",
         "status": OfferStatus.PUBLISHED,
-        "desc": "Coordonner les programmes de soutien scolaire dans les quartiers défavorisés de l'ouest algérien.",
+        "desc": (
+          "Coordonner les programmes de soutien scolaire dans",
+          "les quartiers défavorisés de l'ouest algérien.",
+        ),
       },
       {
         "title": "Animateur jeunesse — été",
@@ -320,7 +320,10 @@ class Command(BaseCommand):
         "remote": RemoteMode.ON_SITE,
         "duration": "2 mois",
         "status": OfferStatus.PUBLISHED,
-        "desc": "Animer les programmes d'été pour les enfants de 8 à 14 ans (sports, culture, éducation).",
+        "desc": (
+          "Animer les programmes d'été pour les enfants de 8 ",
+          "à 14 ans (sports, culture, éducation).",
+        ),
       },
       {
         "title": "Bibliothécaire bénévole",
@@ -329,7 +332,10 @@ class Command(BaseCommand):
         "remote": RemoteMode.ON_SITE,
         "duration": "Récurrent",
         "status": OfferStatus.PUBLISHED,
-        "desc": "Gestion et animation de la bibliothèque de quartier, aide aux devoirs et ateliers de lecture.",
+        "desc": (
+          "Gestion et animation de la bibliothèque de quartier, ",
+          "aide aux devoirs et ateliers de lecture.",
+        ),
       },
       {
         "title": "Chargé de communication digital",
@@ -338,7 +344,10 @@ class Command(BaseCommand):
         "remote": RemoteMode.HYBRID,
         "duration": "3 mois",
         "status": OfferStatus.PUBLISHED,
-        "desc": "Piloter la stratégie réseaux sociaux et créer du contenu engageant pour nos campagnes de sensibilisation.",
+        "desc": (
+          "Piloter la stratégie réseaux sociaux et créer du contenu ",
+          "engageant pour nos campagnes de sensibilisation.",
+        ),
       },
       {
         "title": "Consultant collecte de fonds",
@@ -347,7 +356,10 @@ class Command(BaseCommand):
         "remote": RemoteMode.REMOTE,
         "duration": "1 mois",
         "status": OfferStatus.DRAFT,
-        "desc": "Audit et mise en place d'une stratégie de fundraising pour notre campagne annuelle.",
+        "desc": (
+          "Audit et mise en place d'une stratégie ",
+          "de fundraising pour notre campagne annuelle.",
+        ),
       },
     ]
 
@@ -367,7 +379,10 @@ class Command(BaseCommand):
           "duration_label": data["duration"],
           "status": data["status"],
           "description": data["desc"],
-          "desired_profile": "Profil engagé, autonome, avec une première expérience dans le secteur associatif.",
+          "desired_profile": (
+            "Profil engagé, autonome, avec une première ",
+            "expérience dans le secteur associatif.",
+          ),
           "conditions": "Frais de transport remboursés. Repas fournis sur place.",
           "budget": "Gratuit / Bénévolat"
           if data["type"] == EngagementType.VOLUNTEERING

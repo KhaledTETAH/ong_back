@@ -1,11 +1,23 @@
 import uuid
+
 from django.conf import settings
 from django.db import models
-from django.utils.text import slugify
 from django.utils import timezone
-from .enums import *
-from apps.core.models import Country, Cause, Language, Skill
+from django.utils.text import slugify
+
 from apps.core.enums import EngagementType, RemoteMode
+from apps.core.models import Cause, Country, Language, Skill
+
+from .enums import (
+  ContractType,
+  DocumentType,
+  ExperienceLevel,
+  MemberRole,
+  OfferStatus,
+  OfferVisibility,
+  OrganizationType,
+  VerificationStatus,
+)
 
 
 class Organization(models.Model):

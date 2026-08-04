@@ -1,9 +1,10 @@
 import logging
 import uuid
-from datetime import datetime, timezone
-from rest_framework.views import exception_handler
-from rest_framework.response import Response
+from datetime import UTC, datetime
+
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import exception_handler
 
 from .base import BaseAPIException
 from .codes import ErrorCode
@@ -14,7 +15,7 @@ logger = logging.getLogger("api.errors")
 def custom_exception_handler(exc, context):
   request = context.get("request")
   error_id = str(uuid.uuid4())
-  timestamp = datetime.now(timezone.utc).isoformat()
+  timestamp = datetime.now(UTC).isoformat()
 
   # handle business exceptions
   if isinstance(exc, BaseAPIException):

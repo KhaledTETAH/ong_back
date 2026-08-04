@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Organization, Offer
+
+from .models import Offer, Organization
 
 
 class OfferPreviewSerializer(serializers.ModelSerializer):

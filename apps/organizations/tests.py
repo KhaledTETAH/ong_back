@@ -1,8 +1,11 @@
 import uuid
-from rest_framework.test import APITestCase
+
 from django.contrib.auth import get_user_model
 from rest_framework import status
-from apps.core.models import Country, Cause
+from rest_framework.test import APITestCase
+
+from apps.core.models import Cause, Country
+
 from .models import Organization
 
 User = get_user_model()

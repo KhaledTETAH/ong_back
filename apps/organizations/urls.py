@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import OrganizationListView, OrganizationDetailView
+
+from .views import OrganizationDetailView, OrganizationListView
 
 urlpatterns = [
   # GET all active organizations

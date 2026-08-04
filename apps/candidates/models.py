@@ -1,9 +1,11 @@
 import uuid
+
 from django.conf import settings
 from django.db import models
+
+from apps.core.models import Cause, Country, Skill
+
 from .enums import Availability, Mobility, PositionLevel
-from apps.core.models import *
-from apps.core.enums import *
 
 
 class CandidateProfile(models.Model):

@@ -1,7 +1,9 @@
 from rest_framework import serializers
+
+from apps.core.models import Cause, Country, Skill
+
 from .models import CandidateProfile, DesiredPosition
 from .validators import validate_desired_position
-from apps.core.models import Cause, Country, Skill
 
 
 class DesiredPositionSerializer(serializers.ModelSerializer):
