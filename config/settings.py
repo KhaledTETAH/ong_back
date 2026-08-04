@@ -48,6 +48,7 @@ INSTALLED_APPS = [
   "apps.organizations",
   "apps.core",
   "apps.candidates",
+  "apps.engagement",
 ]
 
 # ------------------------------------------------------------------------------
@@ -100,7 +101,16 @@ ASGI_APPLICATION = "config.asgi.application"
 # ------------------------------------------------------------------------------
 
 DATABASES = {
-  "default": env.db("DATABASE_URL"),
+  "default": env.db(
+    "DATABASE_URL",
+    default=(
+      f"postgres://{env('DB_USER', default='postgres')}:"
+      f"{env('DB_PASSWORD', default='')}@"
+      f"{env('DB_HOST', default='localhost')}:"
+      f"{env('DB_PORT', default='5432')}/"
+      f"{env('DB_NAME', default='ong_back')}"
+    ),
+  ),
 }
 
 # ------------------------------------------------------------------------------
@@ -198,8 +208,8 @@ SIMPLE_JWT = {
 # ------------------------------------------------------------------------------
 
 SPECTACULAR_SETTINGS = {
-  "TITLE": "My API",
-  "DESCRIPTION": "Modern REST API built with Django",
+  "TITLE": "ONG Back API",
+  "DESCRIPTION": "REST API for the engagement platform.",
   "VERSION": "1.0.0",
   "SERVE_INCLUDE_SCHEMA": False,
 }
@@ -209,4 +219,5 @@ SPECTACULAR_SETTINGS = {
 # ------------------------------------------------------------------------------
 
 # Development (override in local.py if preferred)
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=DEBUG)
+CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
