@@ -67,9 +67,10 @@ Empty responses (e.g. `204 No Content` on `DELETE`) are normalized instead of le
 ```python
 from core.viewsets import StandardModelViewSet
 
+
 class ProductViewSet(StandardModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+  queryset = Product.objects.all()
+  serializer_class = ProductSerializer
 ```
 
 `list`, `retrieve`, `create`, `update`, `partial_update`, and `destroy` are wrapped automatically — nothing else to do.
@@ -79,17 +80,17 @@ class ProductViewSet(StandardModelViewSet):
 ```python
 from core.responses import SuccessResponse
 
-class ProductViewSet(StandardModelViewSet):
-    ...
 
-    @action(detail=True, methods=['post'])
-    def archive(self, request, pk=None):
-        product = self.get_object()
-        product.archive()
-        return SuccessResponse(
-            data=ProductSerializer(product).data,
-            message="Product archived successfully."
-        )
+class ProductViewSet(StandardModelViewSet):
+  ...
+
+  @action(detail=True, methods=["post"])
+  def archive(self, request, pk=None):
+    product = self.get_object()
+    product.archive()
+    return SuccessResponse(
+      data=ProductSerializer(product).data, message="Product archived successfully."
+    )
 ```
 
 ### 3. Use `SuccessResponse` in plain APIViews
@@ -98,9 +99,10 @@ class ProductViewSet(StandardModelViewSet):
 from rest_framework.views import APIView
 from core.responses import SuccessResponse
 
+
 class StatsView(APIView):
-    def get(self, request):
-        return SuccessResponse(data={"total_users": 1024}, message="Stats retrieved.")
+  def get(self, request):
+    return SuccessResponse(data={"total_users": 1024}, message="Stats retrieved.")
 ```
 
 ## Auto-generated messages

@@ -54,8 +54,8 @@ Every error response follows the same envelope:
 ```python
 # codes.py
 class ErrorCode(str, Enum):
-    INTERNAL_SERVER_ERROR = "internal_server_error"
-    INSUFFICIENT_BALANCE = "insufficient_balance"
+  INTERNAL_SERVER_ERROR = "internal_server_error"
+  INSUFFICIENT_BALANCE = "insufficient_balance"
 ```
 
 ### 2. Raise business exceptions
@@ -64,9 +64,11 @@ class ErrorCode(str, Enum):
 from .base import BaseAPIException
 from .codes import ErrorCode
 
+
 class InsufficientBalanceError(BaseAPIException):
-    default_code = ErrorCode.INSUFFICIENT_BALANCE
-    default_detail = "Not enough balance to complete this transaction."
+  default_code = ErrorCode.INSUFFICIENT_BALANCE
+  default_detail = "Not enough balance to complete this transaction."
+
 
 # in a view/service
 raise InsufficientBalanceError(extra_data={"required": 100, "available": 40})

@@ -7,118 +7,342 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
+  initial = True
 
-    initial = True
+  dependencies = [
+    ("core", "0001_initial"),
+    migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+  ]
 
-    dependencies = [
-        ('core', '0001_initial'),
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-    ]
-
-    operations = [
-        migrations.CreateModel(
-            name='Organization',
-            fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=180)),
-                ('slug', models.SlugField(blank=True, unique=True)),
-                ('type', models.CharField(choices=[('ngo', 'NGO'), ('association', 'Association'), ('foundation', 'Foundation'), ('waqf', 'Waqf'), ('humanitarian', 'Humanitarian organization'), ('charitable', 'Charitable organization')], default='association', max_length=40)),
-                ('city', models.CharField(max_length=120)),
-                ('registry_number', models.CharField(blank=True, max_length=120)),
-                ('size', models.CharField(blank=True, max_length=40)),
-                ('description', models.TextField()),
-                ('mission', models.TextField(blank=True)),
-                ('website', models.URLField(blank=True)),
-                ('verification_status', models.CharField(choices=[('in_progress', 'In progress'), ('verified', 'Verified'), ('certified_plus', 'Certified+')], default='in_progress', max_length=40)),
-                ('is_active', models.BooleanField(default=True)),
-                ('founded_year', models.PositiveSmallIntegerField(blank=True, null=True)),
-                ('logo_url', models.URLField(blank=True)),
-                ('banner_url', models.URLField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('causes', models.ManyToManyField(blank=True, related_name='organizations', to='core.cause')),
-                ('country', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='organizations', to='core.country')),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='organizations', to=settings.AUTH_USER_MODEL)),
-            ],
+  operations = [
+    migrations.CreateModel(
+      name="Organization",
+      fields=[
+        (
+          "id",
+          models.UUIDField(
+            default=uuid.uuid4, editable=False, primary_key=True, serialize=False
+          ),
         ),
-        migrations.CreateModel(
-            name='Offer',
-            fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('title', models.CharField(max_length=180)),
-                ('slug', models.SlugField(blank=True, unique=True)),
-                ('engagement_type', models.CharField(choices=[('employment', 'Employment'), ('volunteering', 'Volunteering'), ('skills_based_volunteering', 'Skills-based volunteering'), ('governance', 'Governance'), ('consulting', 'Consulting'), ('freelance', 'Freelance')], max_length=40)),
-                ('employment_contract', models.CharField(blank=True, choices=[('permanent', 'Permanent (CDI)'), ('fixed_term', 'Fixed-term (CDD)'), ('apprenticeship', 'Apprenticeship'), ('civic_service', 'Civic service'), ('vsi', 'VSI'), ('vie', 'VIE')], max_length=40)),
-                ('experience_level', models.CharField(blank=True, choices=[('junior', 'Junior'), ('confirmed', 'Confirmed'), ('senior', 'Senior'), ('expert', 'Expert'), ('mandate', 'Mandate')], max_length=40)),
-                ('city', models.CharField(blank=True, max_length=120)),
-                ('region', models.CharField(blank=True, max_length=120)),
-                ('remote_mode', models.CharField(choices=[('on_site', 'On site'), ('hybrid', 'Hybrid'), ('remote', 'Remote')], default='on_site', max_length=40)),
-                ('description', models.TextField()),
-                ('responsibilities', models.TextField(blank=True)),
-                ('desired_profile', models.TextField(blank=True)),
-                ('conditions', models.TextField(blank=True)),
-                ('budget', models.CharField(blank=True, max_length=120)),
-                ('duration_label', models.CharField(blank=True, max_length=120)),
-                ('duration_days', models.PositiveIntegerField(blank=True, null=True)),
-                ('status', models.CharField(choices=[('draft', 'Draft'), ('published', 'Published'), ('closed', 'Closed')], default='draft', max_length=40)),
-                ('visibility', models.CharField(choices=[('open', 'Open'), ('targeted', 'Targeted (Verified NGOs)'), ('private', 'Private (Direct invitation)')], default='open', max_length=20)),
-                ('published_at', models.DateTimeField(blank=True, null=True)),
-                ('expires_at', models.DateTimeField(blank=True, null=True)),
-                ('featured', models.BooleanField(default=False)),
-                ('views_count', models.PositiveIntegerField(default=0)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('causes', models.ManyToManyField(blank=True, related_name='offers', to='core.cause')),
-                ('country', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='offers', to='core.country')),
-                ('languages', models.ManyToManyField(blank=True, related_name='offers', to='core.language')),
-                ('skills', models.ManyToManyField(blank=True, related_name='offers', to='core.skill')),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='offers', to='organizations.organization')),
+        ("name", models.CharField(max_length=180)),
+        ("slug", models.SlugField(blank=True, unique=True)),
+        (
+          "type",
+          models.CharField(
+            choices=[
+              ("ngo", "NGO"),
+              ("association", "Association"),
+              ("foundation", "Foundation"),
+              ("waqf", "Waqf"),
+              ("humanitarian", "Humanitarian organization"),
+              ("charitable", "Charitable organization"),
             ],
-            options={
-                'ordering': ['-featured', '-published_at'],
-            },
+            default="association",
+            max_length=40,
+          ),
         ),
-        migrations.CreateModel(
-            name='OrganizationDocument',
-            fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('document_type', models.CharField(choices=[('bylaws', 'Bylaws'), ('receipt', 'Receipt'), ('official_declaration', 'Official declaration (RNA/RNE/national registry)'), ('activity_report', 'Activity report')], max_length=40)),
-                ('file_url', models.URLField()),
-                ('file_name', models.CharField(blank=True, max_length=180)),
-                ('verified', models.BooleanField(default=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='documents', to='organizations.organization')),
+        ("city", models.CharField(max_length=120)),
+        ("registry_number", models.CharField(blank=True, max_length=120)),
+        ("size", models.CharField(blank=True, max_length=40)),
+        ("description", models.TextField()),
+        ("mission", models.TextField(blank=True)),
+        ("website", models.URLField(blank=True)),
+        (
+          "verification_status",
+          models.CharField(
+            choices=[
+              ("in_progress", "In progress"),
+              ("verified", "Verified"),
+              ("certified_plus", "Certified+"),
             ],
-            options={
-                'ordering': ['document_type'],
-            },
+            default="in_progress",
+            max_length=40,
+          ),
         ),
-        migrations.CreateModel(
-            name='Follow',
-            fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='follows', to=settings.AUTH_USER_MODEL)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='followers', to='organizations.organization')),
+        ("is_active", models.BooleanField(default=True)),
+        ("founded_year", models.PositiveSmallIntegerField(blank=True, null=True)),
+        ("logo_url", models.URLField(blank=True)),
+        ("banner_url", models.URLField(blank=True)),
+        ("created_at", models.DateTimeField(auto_now_add=True)),
+        ("updated_at", models.DateTimeField(auto_now=True)),
+        (
+          "causes",
+          models.ManyToManyField(
+            blank=True, related_name="organizations", to="core.cause"
+          ),
+        ),
+        (
+          "country",
+          models.ForeignKey(
+            on_delete=django.db.models.deletion.PROTECT,
+            related_name="organizations",
+            to="core.country",
+          ),
+        ),
+        (
+          "owner",
+          models.ForeignKey(
+            on_delete=django.db.models.deletion.CASCADE,
+            related_name="organizations",
+            to=settings.AUTH_USER_MODEL,
+          ),
+        ),
+      ],
+    ),
+    migrations.CreateModel(
+      name="Offer",
+      fields=[
+        (
+          "id",
+          models.UUIDField(
+            default=uuid.uuid4, editable=False, primary_key=True, serialize=False
+          ),
+        ),
+        ("title", models.CharField(max_length=180)),
+        ("slug", models.SlugField(blank=True, unique=True)),
+        (
+          "engagement_type",
+          models.CharField(
+            choices=[
+              ("employment", "Employment"),
+              ("volunteering", "Volunteering"),
+              ("skills_based_volunteering", "Skills-based volunteering"),
+              ("governance", "Governance"),
+              ("consulting", "Consulting"),
+              ("freelance", "Freelance"),
             ],
-            options={
-                'unique_together': {('user', 'organization')},
-            },
+            max_length=40,
+          ),
         ),
-        migrations.CreateModel(
-            name='OrganizationMember',
-            fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('role', models.CharField(choices=[('admin', 'Admin'), ('recruiter', 'Recruiter'), ('reader', 'Reader')], default='reader', max_length=40)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('organization', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='members', to='organizations.organization')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='organization_memberships', to=settings.AUTH_USER_MODEL)),
+        (
+          "employment_contract",
+          models.CharField(
+            blank=True,
+            choices=[
+              ("permanent", "Permanent (CDI)"),
+              ("fixed_term", "Fixed-term (CDD)"),
+              ("apprenticeship", "Apprenticeship"),
+              ("civic_service", "Civic service"),
+              ("vsi", "VSI"),
+              ("vie", "VIE"),
             ],
-            options={
-                'unique_together': {('organization', 'user')},
-            },
+            max_length=40,
+          ),
         ),
-    ]
+        (
+          "experience_level",
+          models.CharField(
+            blank=True,
+            choices=[
+              ("junior", "Junior"),
+              ("confirmed", "Confirmed"),
+              ("senior", "Senior"),
+              ("expert", "Expert"),
+              ("mandate", "Mandate"),
+            ],
+            max_length=40,
+          ),
+        ),
+        ("city", models.CharField(blank=True, max_length=120)),
+        ("region", models.CharField(blank=True, max_length=120)),
+        (
+          "remote_mode",
+          models.CharField(
+            choices=[
+              ("on_site", "On site"),
+              ("hybrid", "Hybrid"),
+              ("remote", "Remote"),
+            ],
+            default="on_site",
+            max_length=40,
+          ),
+        ),
+        ("description", models.TextField()),
+        ("responsibilities", models.TextField(blank=True)),
+        ("desired_profile", models.TextField(blank=True)),
+        ("conditions", models.TextField(blank=True)),
+        ("budget", models.CharField(blank=True, max_length=120)),
+        ("duration_label", models.CharField(blank=True, max_length=120)),
+        ("duration_days", models.PositiveIntegerField(blank=True, null=True)),
+        (
+          "status",
+          models.CharField(
+            choices=[
+              ("draft", "Draft"),
+              ("published", "Published"),
+              ("closed", "Closed"),
+            ],
+            default="draft",
+            max_length=40,
+          ),
+        ),
+        (
+          "visibility",
+          models.CharField(
+            choices=[
+              ("open", "Open"),
+              ("targeted", "Targeted (Verified NGOs)"),
+              ("private", "Private (Direct invitation)"),
+            ],
+            default="open",
+            max_length=20,
+          ),
+        ),
+        ("published_at", models.DateTimeField(blank=True, null=True)),
+        ("expires_at", models.DateTimeField(blank=True, null=True)),
+        ("featured", models.BooleanField(default=False)),
+        ("views_count", models.PositiveIntegerField(default=0)),
+        ("created_at", models.DateTimeField(auto_now_add=True)),
+        ("updated_at", models.DateTimeField(auto_now=True)),
+        (
+          "causes",
+          models.ManyToManyField(blank=True, related_name="offers", to="core.cause"),
+        ),
+        (
+          "country",
+          models.ForeignKey(
+            on_delete=django.db.models.deletion.PROTECT,
+            related_name="offers",
+            to="core.country",
+          ),
+        ),
+        (
+          "languages",
+          models.ManyToManyField(blank=True, related_name="offers", to="core.language"),
+        ),
+        (
+          "skills",
+          models.ManyToManyField(blank=True, related_name="offers", to="core.skill"),
+        ),
+        (
+          "organization",
+          models.ForeignKey(
+            on_delete=django.db.models.deletion.CASCADE,
+            related_name="offers",
+            to="organizations.organization",
+          ),
+        ),
+      ],
+      options={
+        "ordering": ["-featured", "-published_at"],
+      },
+    ),
+    migrations.CreateModel(
+      name="OrganizationDocument",
+      fields=[
+        (
+          "id",
+          models.UUIDField(
+            default=uuid.uuid4, editable=False, primary_key=True, serialize=False
+          ),
+        ),
+        (
+          "document_type",
+          models.CharField(
+            choices=[
+              ("bylaws", "Bylaws"),
+              ("receipt", "Receipt"),
+              (
+                "official_declaration",
+                "Official declaration (RNA/RNE/national registry)",
+              ),
+              ("activity_report", "Activity report"),
+            ],
+            max_length=40,
+          ),
+        ),
+        ("file_url", models.URLField()),
+        ("file_name", models.CharField(blank=True, max_length=180)),
+        ("verified", models.BooleanField(default=False)),
+        ("created_at", models.DateTimeField(auto_now_add=True)),
+        ("updated_at", models.DateTimeField(auto_now=True)),
+        (
+          "organization",
+          models.ForeignKey(
+            on_delete=django.db.models.deletion.CASCADE,
+            related_name="documents",
+            to="organizations.organization",
+          ),
+        ),
+      ],
+      options={
+        "ordering": ["document_type"],
+      },
+    ),
+    migrations.CreateModel(
+      name="Follow",
+      fields=[
+        (
+          "id",
+          models.UUIDField(
+            default=uuid.uuid4, editable=False, primary_key=True, serialize=False
+          ),
+        ),
+        ("created_at", models.DateTimeField(auto_now_add=True)),
+        ("updated_at", models.DateTimeField(auto_now=True)),
+        (
+          "user",
+          models.ForeignKey(
+            on_delete=django.db.models.deletion.CASCADE,
+            related_name="follows",
+            to=settings.AUTH_USER_MODEL,
+          ),
+        ),
+        (
+          "organization",
+          models.ForeignKey(
+            on_delete=django.db.models.deletion.CASCADE,
+            related_name="followers",
+            to="organizations.organization",
+          ),
+        ),
+      ],
+      options={
+        "unique_together": {("user", "organization")},
+      },
+    ),
+    migrations.CreateModel(
+      name="OrganizationMember",
+      fields=[
+        (
+          "id",
+          models.UUIDField(
+            default=uuid.uuid4, editable=False, primary_key=True, serialize=False
+          ),
+        ),
+        (
+          "role",
+          models.CharField(
+            choices=[
+              ("admin", "Admin"),
+              ("recruiter", "Recruiter"),
+              ("reader", "Reader"),
+            ],
+            default="reader",
+            max_length=40,
+          ),
+        ),
+        ("created_at", models.DateTimeField(auto_now_add=True)),
+        ("updated_at", models.DateTimeField(auto_now=True)),
+        (
+          "organization",
+          models.ForeignKey(
+            on_delete=django.db.models.deletion.CASCADE,
+            related_name="members",
+            to="organizations.organization",
+          ),
+        ),
+        (
+          "user",
+          models.ForeignKey(
+            on_delete=django.db.models.deletion.CASCADE,
+            related_name="organization_memberships",
+            to=settings.AUTH_USER_MODEL,
+          ),
+        ),
+      ],
+      options={
+        "unique_together": {("organization", "user")},
+      },
+    ),
+  ]

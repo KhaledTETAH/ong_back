@@ -7,117 +7,116 @@ from .models import Organization
 
 User = get_user_model()
 
-class OrganizationListViewTest(APITestCase):
-	def setUp(self):
-		self.user = User.objects.create(
-			email="testuser@gmail.com",
-			password="testpassword123"
-		)
-		self.country = Country.objects.create(name="Algeria", code="DZA")
-		self.cause = Cause.objects.create(name="Education")
-		
-		self.active_org = Organization.objects.create(
-			name="Active NGO",
-			owner=self.user,
-			type="association",
-			country=self.country,
-			city="Oran",
-			description="Test",
-			is_active=True
-		)
-		self.active_org.causes.add(self.cause)
-		
-		self.inactive_org = Organization.objects.create(
-			name="Inactive NGO",
-			owner=self.user,
-			type="association",
-			country=self.country,
-			city="Algiers",
-			description="Test",
-			is_active=False
-		)
 
-	def test_get_all_organizations(self):
-		"""
+class OrganizationListViewTest(APITestCase):
+  def setUp(self):
+    self.user = User.objects.create(
+      email="testuser@gmail.com", password="testpassword123"
+    )
+    self.country = Country.objects.create(name="Algeria", code="DZA")
+    self.cause = Cause.objects.create(name="Education")
+
+    self.active_org = Organization.objects.create(
+      name="Active NGO",
+      owner=self.user,
+      type="association",
+      country=self.country,
+      city="Oran",
+      description="Test",
+      is_active=True,
+    )
+    self.active_org.causes.add(self.cause)
+
+    self.inactive_org = Organization.objects.create(
+      name="Inactive NGO",
+      owner=self.user,
+      type="association",
+      country=self.country,
+      city="Algiers",
+      description="Test",
+      is_active=False,
+    )
+
+  def test_get_all_organizations(self):
+    """
     Test that the list view returns only active organizations.
     """
-		response = self.client.get('/api/v1/organizations/')
-		
-		self.assertEqual(response.status_code, status.HTTP_200_OK)
-		self.assertTrue(response.data['success'])
-		
-		# Should only return 1 organization (the active one)
-		self.assertEqual(len(response.data['data']), 1)
-		self.assertEqual(response.data['data'][0]['name'], "Active NGO")
+    response = self.client.get("/api/v1/organizations/")
 
-	def test_inactive_organizations_excluded(self):
-		"""
-		Test that inactive organizations are not in the list.
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertTrue(response.data["success"])
+
+    # Should only return 1 organization (the active one)
+    self.assertEqual(len(response.data["data"]), 1)
+    self.assertEqual(response.data["data"][0]["name"], "Active NGO")
+
+  def test_inactive_organizations_excluded(self):
     """
-		response = self.client.get('/api/v1/organizations/')
-		org_names = [org['name'] for org in response.data['data']]
-		
-		self.assertNotIn("Inactive NGO", org_names)
+    Test that inactive organizations are not in the list.
+    """
+    response = self.client.get("/api/v1/organizations/")
+    org_names = [org["name"] for org in response.data["data"]]
+
+    self.assertNotIn("Inactive NGO", org_names)
 
 
 class OrganizationDetailViewTest(APITestCase):
-	def setUp(self):
-		self.user = User.objects.create(
-			email="testuser@gmail.com",
-			password="testpassword123"
-		)
-		self.country = Country.objects.create(name="France", code="FRA")
-		self.cause = Cause.objects.create(name="Solidarity")
-		
-		self.active_org = Organization.objects.create(
-			name="Active NGO Detail",
-			owner=self.user,
-			type="foundation",
-			country=self.country,
-			city="Paris",
-			description="Test detail",
-			is_active=True
-		)
-		self.active_org.causes.add(self.cause)
-		
-		self.inactive_org = Organization.objects.create(
-			name="Inactive NGO Detail",
-			owner=self.user,
-			type="ngo",
-			country=self.country,
-			city="Lyon",
-			description="Test detail",
-			is_active=False
-		)
+  def setUp(self):
+    self.user = User.objects.create(
+      email="testuser@gmail.com", password="testpassword123"
+    )
+    self.country = Country.objects.create(name="France", code="FRA")
+    self.cause = Cause.objects.create(name="Solidarity")
 
-	def test_get_active_organization(self):
-		"""
-		Test fetching a valid, active organization by UUID.
-		"""
-		url = f'/api/v1/organizations/{self.active_org.id}/'
-		response = self.client.get(url)
-		
-		self.assertEqual(response.status_code, status.HTTP_200_OK)
-		self.assertTrue(response.data['success'])
-		self.assertEqual(response.data['data']['name'], "Active NGO Detail")
-		self.assertIn("Solidarity", response.data['data']['causes'])
+    self.active_org = Organization.objects.create(
+      name="Active NGO Detail",
+      owner=self.user,
+      type="foundation",
+      country=self.country,
+      city="Paris",
+      description="Test detail",
+      is_active=True,
+    )
+    self.active_org.causes.add(self.cause)
 
-	def test_get_nonexistent_organization(self):
-		"""
-		Test that fetching a non-existent UUID returns 404.
-		"""
-		fake_uuid = uuid.uuid4()
-		url = f'/api/v1/organizations/{fake_uuid}/'
-		response = self.client.get(url)
-		
-		# get_object_or_404 raises Http404, which DRF translates to 404
-		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    self.inactive_org = Organization.objects.create(
+      name="Inactive NGO Detail",
+      owner=self.user,
+      type="ngo",
+      country=self.country,
+      city="Lyon",
+      description="Test detail",
+      is_active=False,
+    )
 
-	def test_get_inactive_organization(self):
-		"""
-		Test that fetching an inactive organization returns 404.
-		"""
-		url = f'/api/v1/organizations/{self.inactive_org.id}/'
-		response = self.client.get(url)
-		
-		self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+  def test_get_active_organization(self):
+    """
+    Test fetching a valid, active organization by UUID.
+    """
+    url = f"/api/v1/organizations/{self.active_org.id}/"
+    response = self.client.get(url)
+
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertTrue(response.data["success"])
+    self.assertEqual(response.data["data"]["name"], "Active NGO Detail")
+    self.assertIn("Solidarity", response.data["data"]["causes"])
+
+  def test_get_nonexistent_organization(self):
+    """
+    Test that fetching a non-existent UUID returns 404.
+    """
+    fake_uuid = uuid.uuid4()
+    url = f"/api/v1/organizations/{fake_uuid}/"
+    response = self.client.get(url)
+
+    # get_object_or_404 raises Http404, which DRF translates to 404
+    self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+  def test_get_inactive_organization(self):
+    """
+    Test that fetching an inactive organization returns 404.
+    """
+    url = f"/api/v1/organizations/{self.inactive_org.id}/"
+    response = self.client.get(url)
+
+    self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
