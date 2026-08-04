@@ -1,0 +1,46 @@
+# Fast CI check - runs on all branches to catch issues early
+name: Lint and Basic Checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-and-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Get the code from the repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Install uv
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      # Install all dependencies from pyproject.toml (including dev deps)
+      - name: Install dependencies with uv
+        run: uv sync --all-extras
+
+      # Check for lint errors (unused imports, style issues, etc.)
+      - name: Run Ruff Linter
+        run: uv run ruff check .
+
+      # Check formatting without modifying files
+      - name: Run Ruff Formatter Check
+        run: uv run ruff format --check .
+
+      # Validate Django config (models, URLs, settings)
+      - name: Run Django System Check
+        run: uv run python manage.py check
+        env:
+          SECRET_KEY: "ci-dummy-secret-key-for-testing-only"
+          DEBUG: "False"
