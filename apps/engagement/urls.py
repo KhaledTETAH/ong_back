@@ -7,11 +7,14 @@ from .views import (
   OfferListView,
   OrganizationDetailView,
   OrganizationListView,
+  OrganizationOfferCreateView,
   SaveOfferView,
   ShareOfferView,
   SimilarOffersView,
   SponsorshipMissionCreateView,
   SponsorshipMissionDetailView,
+  MatchingOffersAPIView,
+
 )
 
 urlpatterns = [
@@ -27,6 +30,11 @@ urlpatterns = [
   ),
   path("offers/<slug:slug>/saved/", SaveOfferView.as_view(), name="offer_saved"),
   path("organizations/", OrganizationListView.as_view(), name="organizations"),
+  path(
+    "organizations/<slug:slug>/offers/",
+    OrganizationOfferCreateView.as_view(),
+    name="organization_offer_create",
+  ),
   path(
     "organizations/<slug:slug>/",
     OrganizationDetailView.as_view(),
@@ -47,4 +55,10 @@ urlpatterns = [
     SponsorshipMissionDetailView.as_view(),
     name="sponsorship_verify",
   ),
+     path(
+        "offers/matching/",
+        MatchingOffersAPIView.as_view(),
+        name="matching-offers"
+    ),
+   
 ]

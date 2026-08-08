@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from .enums import Role, Status
+from .serializers import UserMinimalSerializer
 
 User = get_user_model()
 
@@ -134,3 +135,8 @@ class RBACAndAuthTests(TestCase):
     """
     response = self.client.get(self.me_url)
     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+  def test_08_user_minimal_serializer_returns_id_and_email(self):
+    serializer = UserMinimalSerializer(instance=self.user)
+    self.assertEqual(serializer.data["id"], str(self.user.id))
+    self.assertEqual(serializer.data["email"], self.user.email)

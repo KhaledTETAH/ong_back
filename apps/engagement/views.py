@@ -5,6 +5,7 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 
+from apps.accounts.enums import Role
 from apps.accounts.permissions import IsCandidate
 from config.responses import SuccessResponse
 
@@ -19,6 +20,7 @@ from .models import (
 )
 from .serializers import (
   ApplicationSerializer,
+  OfferCreateSerializer,
   OfferDetailSerializer,
   OfferSummarySerializer,
   OrganizationDetailSerializer,
@@ -267,6 +269,30 @@ class OrganizationDetailView(APIView):
     )
 
 
+class OrganizationOfferCreateView(APIView):
+  permission_classes = [IsAuthenticated]
+
+  def post(self, request, slug):
+    organization = get_object_or_404(Organization.objects.select_related("country"), slug=slug)
+    if request.user != organization.owner and request.user.role not in {
+      Role.ADMIN,
+      Role.MODERATOR,
+    }:
+      raise PermissionDenied("You are not allowed to create offers for this organization.")
+
+    serializer = OfferCreateSerializer(
+      data=request.data,
+      context={"request": request, "organization": organization},
+    )
+    serializer.is_valid(raise_exception=True)
+    offer = serializer.save()
+    return SuccessResponse(
+      OfferSummarySerializer(offer, context={"request": request}).data,
+      "Offer created.",
+      status=status.HTTP_201_CREATED,
+    )
+
+
 class SponsorshipMissionCreateView(APIView):
   permission_classes = [AllowAny]
 
@@ -303,3 +329,79 @@ class SponsorshipMissionDetailView(APIView):
     return SuccessResponse(
       SponsorshipMissionReadSerializer(mission).data, "Sponsorship mission verified."
     )
+
+
+
+class MatchingOffersAPIView(APIView):
+
+  permission_classes = [IsAuthenticated]
+
+  def get(self, request):
+
+    desired = request.user.desired_position
+
+    results = OfferMatcher().get_matching_offers(desired)
+
+    serializer = MatchingOfferSerializer(
+        results,
+        many=True
+    )
+
+    return Response(serializer.data)
+
+
+#already done in OrganizationListView
+""" class OfferSearchAPIView(APIView):
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+
+        queryset = (
+            Offer.objects.filter(
+                status=OfferStatus.PUBLISHED,
+            )
+            .select_related(
+                "organization",
+                "country",
+            )
+            .prefetch_related(
+                "skills",
+                "causes",
+                "languages",
+            )
+            .distinct()
+        )
+
+        q = request.query_params.get("q")
+
+        if q:
+            queryset = queryset.filter(
+                Q(title__icontains=q)
+                | Q(description__icontains=q)
+                | Q(desired_profile__icontains=q)
+                | Q(responsibilities__icontains=q)
+                | Q(organization__name__icontains=q)
+            )
+        country = request.query_params.get("country")
+
+        if country:
+            queryset = queryset.filter(
+                country_id=country.upper()
+            )
+
+        city = request.query_params.get("city")
+
+        if city:
+            queryset = queryset.filter(
+                city__icontains=city
+            )
+        serializer = OfferSummarySerializer(
+            queryset,
+            many=True,
+        )
+
+        return SuccessResponse(
+            serializer.data,
+            "Offers retrieved successfully.",
+        )         """
