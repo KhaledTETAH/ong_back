@@ -31,6 +31,8 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 INSTALLED_APPS = [
   # Django apps
+  'daphne',      
+    'channels',
   "django.contrib.admin",
   "django.contrib.auth",
   "django.contrib.contenttypes",
@@ -49,8 +51,17 @@ INSTALLED_APPS = [
   "apps.core",
   "apps.candidates",
   "apps.engagement",
+  "apps.messaging",
 ]
+ASGI_APPLICATION = 'config.asgi.application'
 
+
+# Configure an in-memory channel layer for local testing
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
 # ------------------------------------------------------------------------------
 # Custom User
 # ------------------------------------------------------------------------------

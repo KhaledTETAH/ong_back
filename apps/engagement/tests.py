@@ -144,6 +144,41 @@ class FirstSixPagesApiTests(TestCase):
       status.HTTP_200_OK,
     )
 
+  def test_organization_owner_can_create_offer(self):
+    response = self.client.post(
+      reverse("token_obtain_pair"),
+      {"email": "owner@example.test", "password": "Password123!"},
+      format="json",
+    )
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.client.credentials(
+      HTTP_AUTHORIZATION=f"Bearer {response.data['data']['access']}"
+    )
+
+    response = self.client.post(
+      reverse("organization_offer_create", args=[self.organization.slug]),
+      {
+        "title": "Nouveau poste d'éducation",
+        "engagement_type": "volunteering",
+        "country_code": "DZ",
+        "city": "Oran",
+        "description": "Un nouveau poste de bénévolat",
+        "cause_ids": [self.cause.id],
+        "language_codes": [self.language.code],
+        "skill_ids": [self.skill.id],
+      },
+      format="json",
+    )
+
+    self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    self.assertEqual(response.data["data"]["title"], "Nouveau poste d'éducation")
+    self.assertTrue(
+      Offer.objects.filter(
+        organization=self.organization,
+        title="Nouveau poste d'éducation",
+      ).exists()
+    )
+
   def test_candidate_can_save_apply_and_share_offer(self):
     self.authenticate_candidate()
     self.assertEqual(

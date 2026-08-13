@@ -92,6 +92,96 @@ class OfferSummarySerializer(serializers.ModelSerializer):
     ]
 
 
+class OfferCreateSerializer(serializers.ModelSerializer):
+  country_code = serializers.CharField(write_only=True)
+  cause_ids = serializers.ListField(
+    child=serializers.IntegerField(), write_only=True, required=False
+  )
+  language_codes = serializers.ListField(
+    child=serializers.CharField(), write_only=True, required=False
+  )
+  skill_ids = serializers.ListField(
+    child=serializers.IntegerField(), write_only=True, required=False
+  )
+
+  class Meta:
+    model = Offer
+    fields = [
+      "id",
+      "title",
+      "engagement_type",
+      "employment_contract",
+      "country_code",
+      "city",
+      "region",
+      "remote_mode",
+      "description",
+      "responsibilities",
+      "desired_profile",
+      "conditions",
+      "duration_label",
+      "duration_days",
+      "experience_level",
+      "status",
+      "expires_at",
+      "featured",
+      "cause_ids",
+      "language_codes",
+      "skill_ids",
+    ]
+    read_only_fields = ["id"]
+
+  def validate_country_code(self, value):
+    code = (value or "").strip().upper()
+    if not code:
+      raise serializers.ValidationError("A country code is required.")
+    country, _ = Country.objects.get_or_create(
+      code=code,
+      defaults={"name_fr": code, "is_covered": True},
+    )
+    self._country = country
+    return code
+
+  def validate_cause_ids(self, value):
+    if value is None:
+      return []
+    if not Cause.objects.filter(id__in=value).count() == len(set(value)):
+      raise serializers.ValidationError("One or more causes are invalid.")
+    return value
+
+  def validate_language_codes(self, value):
+    if value is None:
+      return []
+    existing_codes = set(Language.objects.filter(code__in=value).values_list("code", flat=True))
+    if len(existing_codes) != len(set(value)):
+      raise serializers.ValidationError("One or more languages are invalid.")
+    return value
+
+  def validate_skill_ids(self, value):
+    if value is None:
+      return []
+    if not Skill.objects.filter(id__in=value).count() == len(set(value)):
+      raise serializers.ValidationError("One or more skills are invalid.")
+    return value
+
+  def create(self, validated_data):
+    organization = self.context["organization"]
+    country = self._country
+    cause_ids = validated_data.pop("cause_ids", [])
+    language_codes = validated_data.pop("language_codes", [])
+    skill_ids = validated_data.pop("skill_ids", [])
+    validated_data.pop("country_code", None)
+
+    offer = Offer.objects.create(organization=organization, country=country, **validated_data)
+    if cause_ids:
+      offer.causes.add(*Cause.objects.filter(id__in=cause_ids))
+    if language_codes:
+      offer.languages.add(*Language.objects.filter(code__in=language_codes))
+    if skill_ids:
+      offer.skills.add(*Skill.objects.filter(id__in=skill_ids))
+    return offer
+
+
 class OfferDetailSerializer(OfferSummarySerializer):
   is_saved = serializers.SerializerMethodField()
   has_applied = serializers.SerializerMethodField()
@@ -254,3 +344,9 @@ class SponsorshipMissionReadSerializer(serializers.ModelSerializer):
       "causes",
       "created_at",
     ]
+
+
+class MatchingOfferSerializer(serializers.Serializer):
+  
+  offer = OfferDetailSerializer()
+  score = serializers.IntegerField()   
