@@ -258,14 +258,11 @@ class Command(BaseCommand):
         "registry_number": registry,
         "founded_year": int(founded),
         "description": (
-          f"L'organisation {name} œuvre depuis {founded} pour le",
-          "développement local et l'impact social. Elle accompagne les communautés ",
-          "à travers des programmes structurants et un réseau de bénévoles engagés.",
+          f"L'organisation {name} œuvre depuis {founded} pour le "
+          "développement local et l'impact social. Elle accompagne les communautés "
+          "à travers des programmes structurants et un réseau de bénévoles engagés."
         ),
-        "mission": (
-          "Promouvoir l'accès aux droits fondamentaux et renforcer les ",
-          "capacités locales dans la région  de {city}.",
-        ),
+        "mission": f"Promouvoir l'accès aux droits fondamentaux et renforcer les capacités locales dans la région de {city}.",
         "website": website,
         "is_active": True,
         "logo_url": "https://ui-avatars.com/api/?name="
