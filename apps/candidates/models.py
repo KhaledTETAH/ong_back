@@ -4,8 +4,9 @@ from django.conf import settings
 from django.db import models
 
 from apps.core.models import Cause, Country, Skill
+from apps.organizations.models import Offer
 
-from .enums import Availability, Mobility, PositionLevel
+from .enums import ApplicationStage, Availability, Mobility, PositionLevel
 
 
 class CandidateProfile(models.Model):
@@ -97,3 +98,29 @@ class DesiredPosition(models.Model):
 
   def __str__(self):
     return f"Desired position for {self.candidate.user.email}"
+
+
+class Application(models.Model):
+  """
+  An application submitted by a candidate to an offer.
+  """
+
+  id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+  candidate = models.ForeignKey(
+    CandidateProfile, on_delete=models.CASCADE, related_name="applications"
+  )
+  offer = models.ForeignKey(
+    Offer, on_delete=models.CASCADE, related_name="applications"
+  )
+  stage = models.CharField(
+    max_length=20, choices=ApplicationStage.choices, default=ApplicationStage.SUBMITTED
+  )
+
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  class Meta:
+    ordering = ["-updated_at"]
+
+  def __str__(self):
+    return f"{self.candidate} -> {self.offer.title}"
