@@ -323,8 +323,8 @@ class Command(BaseCommand):
         "duration": "6 mois",
         "status": OfferStatus.PUBLISHED,
         "desc": (
-          "Coordonner les programmes de soutien scolaire dans",
-          "les quartiers défavorisés de l'ouest algérien.",
+          "Coordonner les programmes de soutien scolaire dans "
+          "les quartiers défavorisés de l'ouest algérien."
         ),
       },
       {
@@ -335,8 +335,8 @@ class Command(BaseCommand):
         "duration": "2 mois",
         "status": OfferStatus.PUBLISHED,
         "desc": (
-          "Animer les programmes d'été pour les enfants de 8 ",
-          "à 14 ans (sports, culture, éducation).",
+          "Animer les programmes d'été pour les enfants de 8 "
+          "à 14 ans (sports, culture, éducation)."
         ),
       },
       {
@@ -347,8 +347,8 @@ class Command(BaseCommand):
         "duration": "Récurrent",
         "status": OfferStatus.PUBLISHED,
         "desc": (
-          "Gestion et animation de la bibliothèque de quartier, ",
-          "aide aux devoirs et ateliers de lecture.",
+          "Gestion et animation de la bibliothèque de quartier, "
+          "aide aux devoirs et ateliers de lecture."
         ),
       },
       {
@@ -359,8 +359,8 @@ class Command(BaseCommand):
         "duration": "3 mois",
         "status": OfferStatus.PUBLISHED,
         "desc": (
-          "Piloter la stratégie réseaux sociaux et créer du contenu ",
-          "engageant pour nos campagnes de sensibilisation.",
+          "Piloter la stratégie réseaux sociaux et créer du contenu "
+          "engageant pour nos campagnes de sensibilisation."
         ),
       },
       {
@@ -371,8 +371,8 @@ class Command(BaseCommand):
         "duration": "1 mois",
         "status": OfferStatus.DRAFT,
         "desc": (
-          "Audit et mise en place d'une stratégie ",
-          "de fundraising pour notre campagne annuelle.",
+          "Audit et mise en place d'une stratégie "
+          "de fundraising pour notre campagne annuelle."
         ),
       },
     ]
@@ -395,8 +395,8 @@ class Command(BaseCommand):
           "status": data["status"],
           "description": data["desc"],
           "desired_profile": (
-            "Profil engagé, autonome, avec une première ",
-            "expérience dans le secteur associatif.",
+            "Profil engagé, autonome, avec une première "
+            "expérience dans le secteur associatif."
           ),
           "conditions": "Frais de transport remboursés. Repas fournis sur place.",
           "budget": "Gratuit / Bénévolat"
