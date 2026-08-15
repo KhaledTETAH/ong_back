@@ -4,6 +4,10 @@ from .models import Offer, Organization, OrganizationDocument
 
 
 class CountrySerializer(serializers.ModelSerializer):
+  """
+  Serializer for a country, exposing its code and a localized display name.
+  """
+
   name_fr = serializers.CharField(source="name", read_only=True)
 
   class Meta:
@@ -12,12 +16,20 @@ class CountrySerializer(serializers.ModelSerializer):
 
 
 class CauseSerializer(serializers.ModelSerializer):
+  """
+  Serializer for a cause (taxonomy) exposed on organizations and offers.
+  """
+
   class Meta:
     model = Offer.causes.field.related_model
     fields = ["id", "name", "slug"]
 
 
 class OfferOrganizationSummarySerializer(serializers.ModelSerializer):
+  """
+  Serializer for the compact organization summary embedded in an offer.
+  """
+
   class Meta:
     model = Organization
     fields = [
@@ -73,6 +85,10 @@ class OrganizationDocumentSerializer(serializers.ModelSerializer):
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
+  """
+  Serializer for an organization's public profile (page 7).
+  """
+
   country = CountrySerializer(read_only=True)
   causes = CauseSerializer(many=True, read_only=True)
   open_offers_count = serializers.IntegerField(read_only=True)
