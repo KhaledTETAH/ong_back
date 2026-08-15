@@ -41,7 +41,7 @@ def custom_exception_handler(exc, context):
     return Response(
       {
         "success": False,
-        "status": exc.status_code,
+        "status_code": exc.status_code,
         "code": code,
         "message": str(exc.detail),
         "errors": exc.extra_data if exc.extra_data else None,
@@ -77,7 +77,7 @@ def custom_exception_handler(exc, context):
     return Response(
       {
         "success": False,
-        "status": response.status_code,
+        "status_code": response.status_code,
         "code": code,
         "message": message,
         "errors": errors,
@@ -95,9 +95,10 @@ def custom_exception_handler(exc, context):
   return Response(
     {
       "success": False,
-      "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
+      "status_code": status.HTTP_500_INTERNAL_SERVER_ERROR,
       "code": ErrorCode.INTERNAL_SERVER_ERROR.value,
       "message": "An unexpected error occurred.",
+      "errors": None,
       "meta": {
         "error_id": error_id,
         "timestamp": timestamp,

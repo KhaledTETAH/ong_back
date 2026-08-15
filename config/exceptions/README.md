@@ -32,7 +32,7 @@ Every error response follows the same envelope:
 ```json
 {
   "success": false,
-  "status": 400,
+  "status_code": 400,
   "code": "INSUFFICIENT_BALANCE",
   "message": "Not enough balance to complete this transaction.",
   "errors": null,
