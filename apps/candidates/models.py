@@ -46,6 +46,12 @@ class DesiredPosition(models.Model):
   engagement_types = models.JSONField(default=list, blank=True)
   # multi select validated against EngagementType.choices
 
+  # title of the desired position
+  position_title = models.CharField(max_length=120, blank=True)
+
+  # email alert preference for matching offers
+  email_alerts = models.BooleanField(default=False)
+
   # causes (preferred and excluded)
   preferred_causes = models.ManyToManyField(
     Cause, related_name="desired_by_candidates", blank=True

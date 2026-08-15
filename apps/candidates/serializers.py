@@ -19,7 +19,7 @@ class DesiredPositionSerializer(serializers.ModelSerializer):
   excluded_causes = serializers.PrimaryKeyRelatedField(
     queryset=Cause.objects.all(), many=True, required=False
   )
-  preferred_countries = serializers.PrimaryKeyRelatedField(
+  preferred_geographies = serializers.PrimaryKeyRelatedField(
     queryset=Country.objects.all(), many=True, required=False
   )
   skills_to_leverage = serializers.PrimaryKeyRelatedField(
@@ -33,6 +33,7 @@ class DesiredPositionSerializer(serializers.ModelSerializer):
     model = DesiredPosition
     fields = [
       "id",
+      "position_title",
       "engagement_types",
       "preferred_causes",
       "excluded_causes",
@@ -40,13 +41,13 @@ class DesiredPositionSerializer(serializers.ModelSerializer):
       "availability",
       "mobility",
       "position_level",
-      "preferred_countries",
-      "preferred_regions",
+      "preferred_geographies",
       "skills_to_leverage",
       "skills_to_develop",
       "min_daily_rate",
       "available_from",
       "available_until",
+      "email_alerts",
     ]
 
   def validate(self, data):

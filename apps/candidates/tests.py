@@ -14,6 +14,50 @@ from .models import Application, CandidateProfile
 User = get_user_model()
 
 
+class DesiredPositionViewTests(TestCase):
+  """
+  Tests for the desired position GET endpoint (page 9 prefill).
+  """
+
+  def setUp(self):
+    """
+    Set up a client and an authenticated candidate.
+    """
+    self.client = APIClient()
+
+    self.user = User.objects.create_user(
+      email="fica@example.com",
+      password="securepassword123",
+      role=Role.CANDIDATE,
+      status=Status.ACTIVE,
+      email_verified=True,
+    )
+    self.client.force_authenticate(user=self.user)
+    self.url = reverse("candidates:desired_position")
+
+  def test_get_creates_and_returns_default(self):
+    """
+    Test: GET creates an empty DesiredPosition and returns it.
+    """
+    response = self.client.get(self.url)
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertTrue(response.data["success"])
+    self.assertEqual(response.data["data"]["position_title"], "")
+    self.assertEqual(response.data["data"]["email_alerts"], False)
+
+  def test_put_updates_position_title(self):
+    """
+    Test: PUT persists the desired position fields.
+    """
+    self.client.put(
+      self.url, {"position_title": "Chef de projet éducation"}, format="json"
+    )
+    response = self.client.get(self.url)
+    self.assertEqual(
+      response.data["data"]["position_title"], "Chef de projet éducation"
+    )
+
+
 class MyCandidacyViewTests(TestCase):
   """
   Tests for the authenticated candidate dashboard endpoint.
