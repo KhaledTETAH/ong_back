@@ -1,3 +1,4 @@
+from django.conf import settings as django_settings
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -46,9 +47,12 @@ class RBACAndAuthTests(TestCase):
     self.assertTrue(response.data["success"])
     self.assertEqual(response.data["status_code"], 200)
 
-    # tokens are inside the "data" dictionary
+    # access token is in the body, refresh token only in an httpOnly cookie
     self.assertIn("access", response.data["data"])
-    self.assertIn("refresh", response.data["data"])
+    self.assertNotIn("refresh", response.data["data"])
+    cookie_name = django_settings.AUTH_COOKIE
+    self.assertIn(cookie_name, response.cookies)
+    self.assertTrue(response.cookies[cookie_name]["httponly"])
 
     # save token for subsequent tests
     self.access_token = response.data["data"]["access"]
@@ -186,3 +190,95 @@ class PasswordValidationTests(TestCase):
       }
     )
     self.assertTrue(serializer.is_valid())
+
+
+class CookieAuthTests(TestCase):
+  """
+  Tests that the refresh token is stored in an httpOnly cookie and is used
+  for refresh/logout instead of being exposed in the response body.
+  """
+
+  def setUp(self):
+    """
+    Create a candidate and the login URL.
+    """
+    self.user = get_user_model().objects.create_user(
+      email="cookie@example.com",
+      password="securepassword123",
+      role=Role.CANDIDATE,
+      status=Status.ACTIVE,
+      email_verified=True,
+    )
+    self.client = APIClient()
+    self.cookie_name = django_settings.AUTH_COOKIE
+    self.login_url = reverse("token_obtain_pair")
+    self.refresh_url = reverse("token_refresh")
+    self.logout_url = reverse("token_blacklist")
+
+  def _login(self):
+    """
+    Helper: login and assert the refresh cookie is set and no refresh token
+    is exposed in the body.
+    """
+    response = self.client.post(
+      self.login_url,
+      {"email": "cookie@example.com", "password": "securepassword123"},
+      format="json",
+    )
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertEqual(response.data["success"], True)
+    self.assertIn("access", response.data["data"])
+    self.assertNotIn("refresh", response.data["data"])
+    self.assertIn(self.cookie_name, response.cookies)
+    self.assertTrue(response.cookies[self.cookie_name]["httponly"])
+    return response.data["data"]["access"]
+
+  def test_login_sets_httponly_refresh_cookie(self):
+    """
+    Test: login issues an access token in the body and a refresh cookie.
+    """
+    self._login()
+
+  def test_refresh_uses_cookie_and_rotates(self):
+    """
+    Test: refresh with the cookie returns a new access token and rotates the
+    refresh token, blacklisting the previous one.
+    """
+    self._login()
+    first_cookie = self.client.cookies[self.cookie_name].value
+
+    response = self.client.post(self.refresh_url, {}, format="json")
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertIn("access", response.data["data"])
+    self.assertNotIn("refresh", response.data["data"])
+
+    # Rotation issued a new refresh cookie.
+    new_cookie = self.client.cookies[self.cookie_name].value
+    self.assertNotEqual(first_cookie, new_cookie)
+
+  def test_refresh_rejects_blacklisted_token(self):
+    """
+    Test: an old refresh token cannot be reused after rotation.
+    """
+    self._login()
+    first_refresh = self.client.cookies[self.cookie_name].value
+
+    # Rotate once (blacklists the first refresh token).
+    self.client.post(self.refresh_url, {}, format="json")
+
+    # Trying to refresh with the stale token fails.
+    client = APIClient()
+    client.cookies[self.cookie_name] = first_refresh
+    response = client.post(self.refresh_url, {}, format="json")
+    self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+  def test_logout_clears_cookie(self):
+    """
+    Test: logout removes the refresh cookie.
+    """
+    access = self._login()
+    self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
+    response = self.client.post(self.logout_url, {}, format="json")
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertIn(self.cookie_name, response.cookies)
+    self.assertEqual(response.cookies[self.cookie_name]["max-age"], 0)
