@@ -87,6 +87,10 @@ class MyCandidacyView(APIView):
       "last_name": profile.last_name,
       "email": request.user.email,
       "applications_count": applications.count(),
+      "saved_offers_count": request.user.saved_offers.count(),
+      # Not-yet-built features: keep the contracts stable so the UI has a count.
+      "verified_missions_count": 0,
+      "unread_messages_count": 0,
       "applications": ApplicationSerializer(applications, many=True).data,
     }
 
