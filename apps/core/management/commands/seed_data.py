@@ -13,6 +13,7 @@ What gets created (in order):
         5. Org members       -> owner + recruiter attached to org1
         6. Follows           -> candidate follows org1 and org2
         7. Offers            -> sample volunteering/freelance/consulting offers for org1
+        8. Candidate space   -> candidate profile, desired position fiche, applications
 
 All creation helpers use get_or_create, so re-running the command without
 --flush is idempotent (it won't create duplicates).
@@ -27,6 +28,13 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from apps.accounts.enums import AuthProvider, Role, Status
+from apps.candidates.enums import (
+  ApplicationStage,
+  Availability,
+  Mobility,
+  PositionLevel,
+)
+from apps.candidates.models import Application, CandidateProfile, DesiredPosition
 from apps.core.enums import EngagementType, RemoteMode
 from apps.core.models import Cause, Country, Language, Skill
 from apps.organizations.enums import (
@@ -131,7 +139,10 @@ class Command(BaseCommand):
     Follow.objects.create(user=candidate, organization=org2)
 
     # 7. Offers
-    self.create_offers(org1, countries, causes, languages, skills)
+    offers = self.create_offers(org1, countries, causes, languages, skills)
+
+    # 8. Candidate space (pages 8 & 9)
+    self.seed_candidate(candidate, offers, countries, causes, skills)
 
     self.stdout.write(
       self.style.SUCCESS("Successfully seeded database with realistic data!")
@@ -141,6 +152,9 @@ class Command(BaseCommand):
     )
     self.stdout.write(
       self.style.SUCCESS("NGO login: directeur@lumiere-oran.org / password123")
+    )
+    self.stdout.write(
+      self.style.SUCCESS("Candidate login: candidate@email.com / password123")
     )
 
   # --- Helper Methods ---
@@ -298,7 +312,7 @@ class Command(BaseCommand):
     Casablanca -> MAR, otherwise -> FRA). Published offers get a random
     `published_at` timestamp within the last 30 days; draft offers get
     none. On first creation, each offer is tagged with a default set of
-    causes, languages, and skills.
+    causes, languages, and skills. Returns the created offers list.
     """
     offers_data = [
       {
@@ -363,6 +377,7 @@ class Command(BaseCommand):
       },
     ]
 
+    offers = []
     for data in offers_data:
       offer, created = Offer.objects.get_or_create(
         title=data["title"],
@@ -397,3 +412,85 @@ class Command(BaseCommand):
         offer.causes.set([causes["Éducation"], causes["Jeunesse"]])
         offer.languages.set([languages["Français"], languages["Anglais"]])
         offer.skills.set([skills["Gestion de projet"], skills["Communication"]])
+      offers.append(offer)
+    return offers
+
+  def seed_candidate(self, user, offers, countries, causes, skills):
+    """
+    Create (or update) the candidate's profile, desired position and
+    applications so pages 8 & 9 have data to display and submit.
+    """
+    published = [o for o in offers if o.status == OfferStatus.PUBLISHED]
+
+    profile, _ = CandidateProfile.objects.get_or_create(
+      user=user,
+      defaults={
+        "first_name": "Amine",
+        "last_name": "Benali",
+        "bio": "Engagé dans l'éducation et la jeunesse depuis 5 ans.",
+        "profile_completion": 80,
+        "is_expert_profile": True,
+        "actively_looking": True,
+      },
+    )
+
+    desired = self.seed_desired_position(profile, countries, causes, skills)
+
+    # Applications: one at each of several stages for the tracker demo.
+    staged = [
+      (ApplicationStage.INTERVIEW, published[0]),
+      (ApplicationStage.PREQUALIFIED, published[1]),
+      (ApplicationStage.SUBMITTED, published[2]),
+    ]
+    staged = [(stage, offer) for stage, offer in staged if offer]
+
+    for stage, offer in staged:
+      Application.objects.update_or_create(
+        candidate=profile,
+        offer=offer,
+        defaults={"stage": stage},
+      )
+
+    self.stdout.write(
+      self.style.SUCCESS(
+        f"Candidate space seeded: {len(staged)} applications, "
+        f"desired position ({desired.position_title})."
+      )
+    )
+    return profile
+
+  def seed_desired_position(self, profile, countries, causes, skills):
+    """
+    Create the candidate's 'Desired Position' fiche (page 9) with
+    realistic values mapped to the backend enum/choices.
+    """
+    try:
+      preferred_causes = [
+        causes["Éducation"],
+        causes["Jeunesse"],
+      ]
+      skills_leverage = [skills["Gestion de projet"], skills["Pédagogie"]]
+      preferred_geo = [countries["DZA"]]
+    except KeyError:
+      preferred_causes = []
+      skills_leverage = []
+      preferred_geo = []
+
+    desired, created = DesiredPosition.objects.get_or_create(
+      candidate=profile,
+      defaults={
+        "position_title": "Chef de projet éducation",
+        "engagement_types": ["volunteering", "salaried"],
+        "modalities": ["on_site"],
+        "availability": Availability.PART_TIME,
+        "mobility": Mobility.NATIONAL,
+        "position_level": PositionLevel.CONFIRMED,
+        "min_daily_rate": None,
+        "available_from": timezone.now() + timedelta(days=30),
+        "email_alerts": True,
+      },
+    )
+    desired.preferred_causes.set(preferred_causes)
+    desired.skills_to_leverage.set(skills_leverage)
+    desired.preferred_geographies.set(preferred_geo)
+    return desired
