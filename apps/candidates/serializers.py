@@ -103,13 +103,18 @@ class ApplicationSerializer(serializers.ModelSerializer):
     return obj.offer.country.name if obj.offer.country else None
 
   def get_tracker(self, obj):
-    current_index = obj.stage
+    current_index = (
+      self.TRACKER_STAGES.index(obj.stage) if obj.stage in self.TRACKER_STAGES else None
+    )
     steps = []
     for index, name in enumerate(self.TRACKER_STAGES):
-      state = ""
-      if index < self.TRACKER_STAGES.index(current_index):
+      if current_index is None:
+        state = ""
+      elif index < current_index:
         state = "done"
-      elif name == current_index:
+      elif name == obj.stage:
         state = "current"
+      else:
+        state = ""
       steps.append({"label": f"Step {index + 1}", "name": name, "state": state})
     return steps

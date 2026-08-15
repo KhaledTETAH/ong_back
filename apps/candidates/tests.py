@@ -148,3 +148,18 @@ class MyCandidacyViewTests(TestCase):
     )
     states = [step["state"] for step in application["tracker"]]
     self.assertEqual(states, ["done", "done", "current", "", ""])
+
+  def test_unknown_stage_returns_valid_tracker(self):
+    """
+    Test: a stage outside the funnel does not crash and yields empty states.
+    """
+    profile = CandidateProfile.objects.create(user=self.user, first_name="Amine")
+    Application.objects.create(candidate=profile, offer=self.offer, stage="rejected")
+
+    response = self.client.get(self.url)
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    application = response.data["data"]["applications"][0]
+    self.assertEqual(application["stage"], "rejected")
+    states = [step["state"] for step in application["tracker"]]
+    self.assertEqual(states, ["", "", "", "", ""])
