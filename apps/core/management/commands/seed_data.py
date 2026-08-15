@@ -461,7 +461,8 @@ class Command(BaseCommand):
 
   def seed_desired_position(self, profile, countries, causes, skills):
     """
-    Create the candidate's 'Desired Position' fiche (page 9) with
+    Create the candidate's 'Desired Position' fiche
+    with
     realistic values mapped to the backend enum/choices.
     """
     try:

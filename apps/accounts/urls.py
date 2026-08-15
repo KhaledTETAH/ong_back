@@ -7,8 +7,6 @@ from .views import (
   LogoutView,
   MeView,
   OrganizationRegisterView,
-  ProtectedPage89View,
-  PublicPage7View,
 )
 
 urlpatterns = [
@@ -29,7 +27,4 @@ urlpatterns = [
     OrganizationRegisterView.as_view(),
     name="register_organization",
   ),
-  # testing Routes (Page 7 vs Page 8/9)
-  path("public-page7/", PublicPage7View.as_view(), name="public_page7"),
-  path("protected-page89/", ProtectedPage89View.as_view(), name="protected_page89"),
 ]

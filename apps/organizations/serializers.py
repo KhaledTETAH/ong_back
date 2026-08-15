@@ -86,7 +86,7 @@ class OrganizationDocumentSerializer(serializers.ModelSerializer):
 
 class OrganizationSerializer(serializers.ModelSerializer):
   """
-  Serializer for an organization's public profile (page 7).
+  Serializer for an organization's public profile.
   """
 
   country = CountrySerializer(read_only=True)

@@ -16,7 +16,7 @@ User = get_user_model()
 
 class DesiredPositionViewTests(TestCase):
   """
-  Tests for the desired position GET endpoint (page 9 prefill).
+  Tests for the desired position GET endpoint (prefill).
   """
 
   def setUp(self):

@@ -11,7 +11,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from config.responses import SuccessResponse
 
-from .permissions import IsCandidate
 from .serializers import (
   CandidateRegistrationSerializer,
   LogoutSerializer,
@@ -241,32 +240,3 @@ class CustomTokenRefreshView(TokenRefreshView):
     )
     _set_refresh_cookie(response, new_refresh)
     return response
-
-
-# mock views for Testing Page 7 vs Page 8/9
-
-
-class PublicPage7View(APIView):
-  """
-  Simulates Page 7 (Public endpoints). Unauthenticated GET succeeds.
-  """
-
-  permission_classes = [AllowAny]
-
-  def get(self, request):
-    return SuccessResponse(
-      data={"message": "Public data accessible to everyone (Page 7)"}
-    )
-
-
-class ProtectedPage89View(APIView):
-  """
-  Simulates Page 8/9 (Candidate-only endpoints). Unauthenticated GET returns 401.
-  """
-
-  permission_classes = [IsAuthenticated, IsCandidate]
-
-  def get(self, request):
-    return SuccessResponse(
-      data={"message": f"Protected data for {request.user.role} (Page 8/9)"}
-    )

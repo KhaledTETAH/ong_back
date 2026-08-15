@@ -30,8 +30,6 @@ class RBACAndAuthTests(TestCase):
     )
 
     self.token_url = reverse("token_obtain_pair")
-    self.public_page7_url = reverse("public_page7")
-    self.protected_page89_url = reverse("protected_page89")
     self.me_url = reverse("auth_me")
 
   def test_01_login_success(self):
@@ -65,50 +63,14 @@ class RBACAndAuthTests(TestCase):
     response = self.client.post(self.token_url, payload, format="json")
     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-  def test_03_public_page7_no_token(self):
+  def test_03_me_endpoint_requires_auth(self):
     """
-    Test: GET /api/v1/public-page7/ returns 200 OK without authentication.
+    Test: GET /api/v1/auth/me/ returns 401 Unauthorized without a token.
     """
-    response = self.client.get(self.public_page7_url)
-    self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    # assert SuccessResponse structure
-    self.assertTrue(response.data["success"])
-    self.assertIn("message", response.data["data"])
-
-  def test_04_protected_page89_no_token(self):
-    """
-    Test: GET /api/v1/protected-page89/ returns 401 Unauthorized without a token.
-    """
-    response = self.client.get(self.protected_page89_url)
+    response = self.client.get(self.me_url)
     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-  def test_05_protected_page89_with_token(self):
-    """
-    Test: GET /api/v1/protected-page89/ returns 200 OK with a valid Bearer token.
-    """
-    # get a valid token (which is wrapped in SuccessResponse)
-    login_response = self.client.post(
-      self.token_url,
-      {"email": "test@example.com", "password": "securepassword123"},
-      format="json",
-    )
-
-    # extract from the "data" key
-    token = login_response.data["data"]["access"]
-
-    # set the Authorization header
-    self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
-
-    # test the protected endpoint
-    response = self.client.get(self.protected_page89_url)
-    self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    # assert SuccessResponse structure
-    self.assertTrue(response.data["success"])
-    self.assertIn("message", response.data["data"])
-
-  def test_06_me_endpoint_with_token(self):
+  def test_04_me_endpoint_with_token(self):
     """
     Test: GET /api/v1/auth/me/ returns 200 OK with user role and status.
     """
