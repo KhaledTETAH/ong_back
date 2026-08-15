@@ -5,6 +5,10 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from .enums import Role, Status
+from .serializers import (
+  CandidateRegistrationSerializer,
+  OrganizationRegistrationSerializer,
+)
 
 User = get_user_model()
 
@@ -134,3 +138,51 @@ class RBACAndAuthTests(TestCase):
     """
     response = self.client.get(self.me_url)
     self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class PasswordValidationTests(TestCase):
+  """
+  Tests ensuring Django's AUTH_PASSWORD_VALIDATORS are enforced on registration.
+  """
+
+  def test_candidate_registration_rejects_common_password(self):
+    """
+    Test: candidate registration rejects a common/weak 8+ char password.
+    """
+    serializer = CandidateRegistrationSerializer(
+      data={"email": "new.candidate@example.com", "password": "password1"}
+    )
+    self.assertFalse(serializer.is_valid())
+    self.assertIn("non_field_errors", serializer.errors)
+
+  def test_organization_registration_rejects_numeric_password(self):
+    """
+    Test: organization registration rejects an all-numeric password.
+    """
+    serializer = OrganizationRegistrationSerializer(
+      data={
+        "owner_email": "org.owner@example.com",
+        "password": "12345678",
+        "organization_name": "Test Org",
+        "organization_type": "association",
+        "country_code": "DZ",
+        "city": "Oran",
+        "registry_number": "",
+        "description": "desc",
+        "mission": "",
+      }
+    )
+    self.assertFalse(serializer.is_valid())
+    self.assertIn("non_field_errors", serializer.errors)
+
+  def test_candidate_registration_accepts_strong_password(self):
+    """
+    Test: candidate registration accepts a strong password.
+    """
+    serializer = CandidateRegistrationSerializer(
+      data={
+        "email": "strong.candidate@example.com",
+        "password": "Tr0ub4dour&wonderful",
+      }
+    )
+    self.assertTrue(serializer.is_valid())

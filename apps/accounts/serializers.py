@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 from .enums import Role, Status
@@ -30,6 +31,10 @@ class CandidateRegistrationSerializer(serializers.Serializer):
       raise serializers.ValidationError("A user with this email already exists.")
     return value
 
+  def validate(self, data):
+    validate_password(data["password"])
+    return data
+
   def create(self, validated_data):
     User = get_user_model()
     user = User.objects.create_user(
@@ -60,3 +65,7 @@ class OrganizationRegistrationSerializer(serializers.Serializer):
     if User.objects.filter(email__iexact=value).exists():
       raise serializers.ValidationError("A user with this email already exists.")
     return value
+
+  def validate(self, data):
+    validate_password(data["password"])
+    return data
