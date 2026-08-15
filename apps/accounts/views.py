@@ -76,6 +76,7 @@ class OrganizationRegisterView(CreateAPIView):
 
   def create(self, request, *args, **kwargs):
     from apps.core.models import Country
+    from apps.organizations.enums import VerificationStatus
     from apps.organizations.models import Organization
 
     serializer = self.get_serializer(data=request.data)
@@ -104,7 +105,7 @@ class OrganizationRegisterView(CreateAPIView):
       description=data["description"],
       mission=data.get("mission", ""),
       is_active=True,
-      verification_status="pending",
+      verification_status=VerificationStatus.IN_PROGRESS,
     )
 
     return SuccessResponse(
