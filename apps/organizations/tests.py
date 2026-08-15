@@ -133,7 +133,7 @@ def test_get_nonexistent_organization(self):
     """
     Test that fetching a non-existent slug returns 404.
     """
-    url = f"/api/v1/organizations/nonexistent-org/"
+    url = "/api/v1/organizations/nonexistent-org/"
     response = self.client.get(url)
 
     # get_object_or_404 raises Http404, which DRF translates to 404

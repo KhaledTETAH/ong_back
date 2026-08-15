@@ -1,4 +1,6 @@
+from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
+from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
@@ -8,7 +10,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from config.responses import SuccessResponse
 
 from .permissions import IsCandidate
-from .serializers import LogoutSerializer
+from .serializers import (
+  CandidateRegistrationSerializer,
+  LogoutSerializer,
+  OrganizationRegistrationSerializer,
+)
 
 
 class MeView(APIView):
@@ -30,6 +36,86 @@ class MeView(APIView):
     }
 
     return SuccessResponse(user_data, "Profile retrieved successfully.")
+
+
+class CandidateRegisterView(CreateAPIView):
+  """
+  POST /api/v1/auth/register/candidate/
+  Creates a candidate user account.
+  """
+
+  permission_classes = [AllowAny]
+  serializer_class = CandidateRegistrationSerializer
+
+  def create(self, request, *args, **kwargs):
+    serializer = self.get_serializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.save()
+
+    return SuccessResponse(
+      data={
+        "id": str(user.id),
+        "email": user.email,
+        "role": user.role,
+        "status": user.status,
+        "email_verified": user.email_verified,
+      },
+      message="Candidate account created successfully.",
+      status=201,
+    )
+
+
+class OrganizationRegisterView(CreateAPIView):
+  """
+  POST /api/v1/auth/register/organization/
+  Creates an organization owner user and the organization record.
+  """
+
+  permission_classes = [AllowAny]
+  serializer_class = OrganizationRegistrationSerializer
+
+  def create(self, request, *args, **kwargs):
+    from apps.core.models import Country
+    from apps.organizations.models import Organization
+
+    serializer = self.get_serializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    data = serializer.validated_data
+    owner = get_user_model().objects.create_user(
+      email=data["owner_email"],
+      password=data["password"],
+      role="ngo_member",
+      status="active",
+    )
+
+    country, _ = Country.objects.get_or_create(
+      code=data["country_code"].upper(),
+      defaults={"name": data["country_code"].upper()},
+    )
+
+    organization = Organization.objects.create(
+      owner=owner,
+      name=data["organization_name"],
+      type=data["organization_type"],
+      country=country,
+      city=data["city"],
+      registry_number=data["registry_number"],
+      description=data["description"],
+      mission=data.get("mission", ""),
+      is_active=True,
+      verification_status="pending",
+    )
+
+    return SuccessResponse(
+      data={
+        "id": str(organization.id),
+        "name": organization.name,
+        "slug": organization.slug,
+      },
+      message="Organization account created successfully.",
+      status=201,
+    )
 
 
 class LogoutView(APIView):

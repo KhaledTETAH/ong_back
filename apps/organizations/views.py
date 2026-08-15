@@ -44,7 +44,9 @@ class OrganizationDetailView(APIView):
     organization = get_object_or_404(
       Organization.objects.filter(is_active=True)
       .prefetch_related("offers", "causes")
-      .annotate(open_offers_count=Count("offers", filter=Q(offers__status="published"))),
+      .annotate(
+        open_offers_count=Count("offers", filter=Q(offers__status="published"))
+      ),
       slug=slug,
     )
 

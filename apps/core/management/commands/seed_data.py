@@ -262,7 +262,10 @@ class Command(BaseCommand):
           "développement local et l'impact social. Elle accompagne les communautés "
           "à travers des programmes structurants et un réseau de bénévoles engagés."
         ),
-        "mission": f"Promouvoir l'accès aux droits fondamentaux et renforcer les capacités locales dans la région de {city}.",
+        "mission": (
+          "Promouvoir l'accès aux droits fondamentaux et renforcer les "
+          f"capacités locales dans la région de {city}."
+        ),
         "website": website,
         "is_active": True,
         "logo_url": "https://ui-avatars.com/api/?name="
