@@ -187,6 +187,8 @@ REST_FRAMEWORK = {
   "DEFAULT_THROTTLE_RATES": {
     "anon": "100/hour",
     "user": "1000/hour",
+    "login": "10/minute",
+    "register": "5/hour",
   },
   "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
   "EXCEPTION_HANDLER": "config.exceptions.handler.custom_exception_handler",

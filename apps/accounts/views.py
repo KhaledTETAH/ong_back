@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import CreateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -46,6 +47,8 @@ class CandidateRegisterView(CreateAPIView):
 
   permission_classes = [AllowAny]
   serializer_class = CandidateRegistrationSerializer
+  throttle_classes = [ScopedRateThrottle]
+  throttle_scope = "register"
 
   def create(self, request, *args, **kwargs):
     serializer = self.get_serializer(data=request.data)
@@ -73,6 +76,8 @@ class OrganizationRegisterView(CreateAPIView):
 
   permission_classes = [AllowAny]
   serializer_class = OrganizationRegistrationSerializer
+  throttle_classes = [ScopedRateThrottle]
+  throttle_scope = "register"
 
   def create(self, request, *args, **kwargs):
     from apps.core.models import Country
@@ -150,6 +155,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
   Wraps the default SimpleJWT login view to return our standardized success format.
   """
 
+  throttle_classes = [ScopedRateThrottle]
+  throttle_scope = "login"
+
   def post(self, request, *args, **kwargs):
     response = super().post(request, *args, **kwargs)
 
@@ -162,6 +170,9 @@ class CustomTokenRefreshView(TokenRefreshView):
   """
   Wraps the default SimpleJWT refresh view.
   """
+
+  throttle_classes = [ScopedRateThrottle]
+  throttle_scope = "login"
 
   def post(self, request, *args, **kwargs):
     response = super().post(request, *args, **kwargs)
