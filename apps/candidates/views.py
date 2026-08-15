@@ -1,10 +1,15 @@
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from config.responses import SuccessResponse
 
 from .models import CandidateProfile, DesiredPosition
-from .serializers import ActivelyLookingSerializer, DesiredPositionSerializer
+from .serializers import (
+  ActivelyLookingSerializer,
+  ApplicationSerializer,
+  DesiredPositionSerializer,
+)
 
 
 class DesiredPositionView(generics.RetrieveUpdateAPIView):
@@ -52,6 +57,8 @@ class ActivelyLookingView(APIView):
   PATCH: Lightweight endpoint to toggle the "Actively Looking" boolean.
   """
 
+  permission_classes = [IsAuthenticated]
+
   def patch(self, request):
     profile, _ = CandidateProfile.objects.get_or_create(user=request.user)
 
@@ -61,4 +68,32 @@ class ActivelyLookingView(APIView):
 
     return SuccessResponse(
       data=serializer.data, message="Actively looking status updated."
+    )
+
+
+class MyCandidacyView(APIView):
+  """
+  GET: Returns the authenticated candidate's dashboard (stats + applications).
+  """
+
+  permission_classes = [IsAuthenticated]
+
+  def get(self, request):
+    profile, _ = CandidateProfile.objects.get_or_create(user=request.user)
+    applications = profile.applications.all()
+
+    data = {
+      "first_name": profile.first_name,
+      "last_name": profile.last_name,
+      "email": request.user.email,
+      "applications_count": applications.count(),
+      "saved_offers_count": request.user.saved_offers.count(),
+      # Not-yet-built features: keep the contracts stable so the UI has a count.
+      "verified_missions_count": 0,
+      "unread_messages_count": 0,
+      "applications": ApplicationSerializer(applications, many=True).data,
+    }
+
+    return SuccessResponse(
+      data=data, message="Candidate dashboard retrieved successfully."
     )

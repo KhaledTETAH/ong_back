@@ -23,3 +23,15 @@ class PositionLevel(models.TextChoices):
   SENIOR = "senior", "Senior"
   EXPERT = "expert", "Expert"
   MANDATE = "mandate", "Mandate"
+
+
+class ApplicationStage(models.TextChoices):
+  """
+  Ordered stages of an application's tracking funnel.
+  """
+
+  SUBMITTED = "submitted", "Submitted"
+  PREQUALIFIED = "prequalified", "Prequalified"
+  INTERVIEW = "interview", "Interview"
+  DECISION = "decision", "Decision"
+  OFFER = "offer", "Offer"

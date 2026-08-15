@@ -187,6 +187,9 @@ REST_FRAMEWORK = {
   "DEFAULT_THROTTLE_RATES": {
     "anon": "100/hour",
     "user": "1000/hour",
+    "login": "15/minute",
+    "register": "5/hour",
+    "refresh": "60/minute",
   },
   "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
   "EXCEPTION_HANDLER": "config.exceptions.handler.custom_exception_handler",
@@ -202,6 +205,14 @@ SIMPLE_JWT = {
   "ROTATE_REFRESH_TOKENS": True,
   "BLACKLIST_AFTER_ROTATION": True,
 }
+
+# Refresh token stored in an httpOnly cookie instead of client-side storage.
+AUTH_COOKIE = env("AUTH_COOKIE", default="ong_refresh")
+AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7  # 7 days, mirrors REFRESH_TOKEN_LIFETIME
+AUTH_COOKIE_HTTPONLY = True
+AUTH_COOKIE_SECURE = env.bool("AUTH_COOKIE_SECURE", default=not DEBUG)
+AUTH_COOKIE_SAMESITE = env("AUTH_COOKIE_SAMESITE", default="lax")
+AUTH_COOKIE_PATH = "/"
 
 # ------------------------------------------------------------------------------
 # OpenAPI / Swagger
@@ -220,4 +231,9 @@ SPECTACULAR_SETTINGS = {
 
 # Development (override in local.py if preferred)
 CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS", default=DEBUG)
-CORS_ALLOWED_ORIGINS = env.list("CORS_ALLOWED_ORIGINS", default=[])
+CORS_ALLOWED_ORIGINS = env.list(
+  "CORS_ALLOWED_ORIGINS",
+  default=["http://localhost:5173", "http://127.0.0.1:5173"],
+)
+# Required so the httpOnly refresh cookie is accepted cross-origin.
+CORS_ALLOW_CREDENTIALS = True
