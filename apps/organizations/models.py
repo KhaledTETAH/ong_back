@@ -50,6 +50,7 @@ class Organization(models.Model):
   causes = models.ManyToManyField(Cause, related_name="organizations", blank=True)
   is_active = models.BooleanField(default=True)
   founded_year = models.PositiveSmallIntegerField(null=True, blank=True)
+  number_of_volunteers = models.PositiveIntegerField(null=True, blank=True)
   logo_url = models.URLField(blank=True)
   banner_url = models.URLField(blank=True)
 
