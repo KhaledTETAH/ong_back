@@ -129,21 +129,18 @@ class OrganizationDetailViewTest(APITestCase):
     self.assertEqual(documents[0]["document_type"], "bylaws")
     self.assertEqual(documents[0]["label"], "Bylaws")
 
-def test_get_nonexistent_organization(self):
+  def test_get_nonexistent_organization(self):
     """
     Test that fetching a non-existent slug returns 404.
     """
     url = "/api/v1/organizations/nonexistent-org/"
     response = self.client.get(url)
-
-    # get_object_or_404 raises Http404, which DRF translates to 404
     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-def test_get_inactive_organization(self):
+  def test_get_inactive_organization(self):
     """
     Test that fetching an inactive organization returns 404.
     """
     url = f"/api/v1/organizations/{self.inactive_org.slug}/"
     response = self.client.get(url)
-
     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
