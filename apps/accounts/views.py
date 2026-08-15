@@ -27,6 +27,7 @@ class MeView(APIView):
 
   def get(self, request):
     user = request.user
+    profile = getattr(user, "candidate_profile", None)
 
     user_data = {
       "id": str(user.id),
@@ -34,6 +35,9 @@ class MeView(APIView):
       "role": user.role,
       "status": user.status,
       "email_verified": user.email_verified,
+      "first_name": profile.first_name if profile else "",
+      "last_name": profile.last_name if profile else "",
+      "phone": user.phone or "",
     }
 
     return SuccessResponse(user_data, "Profile retrieved successfully.")
