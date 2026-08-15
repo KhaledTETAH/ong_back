@@ -28,7 +28,7 @@ class CandidateRegistrationSerializer(serializers.Serializer):
   def validate_email(self, value):
     User = get_user_model()
     if User.objects.filter(email__iexact=value).exists():
-      raise serializers.ValidationError("A user with this email already exists.")
+      raise serializers.ValidationError("Unable to register with this email.")
     return value
 
   def validate(self, data):
@@ -63,7 +63,7 @@ class OrganizationRegistrationSerializer(serializers.Serializer):
   def validate_owner_email(self, value):
     User = get_user_model()
     if User.objects.filter(email__iexact=value).exists():
-      raise serializers.ValidationError("A user with this email already exists.")
+      raise serializers.ValidationError("Unable to register with this email.")
     return value
 
   def validate(self, data):
